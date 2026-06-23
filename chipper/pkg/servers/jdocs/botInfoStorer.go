@@ -12,7 +12,6 @@ import (
 
 	"github.com/kercre123/wire-pod/chipper/pkg/logger"
 	"github.com/kercre123/wire-pod/chipper/pkg/vars"
-	"google.golang.org/grpc/peer"
 	"gopkg.in/ini.v1"
 )
 
@@ -129,14 +128,19 @@ func WriteToIniSecondary(esn, guid, ip string) {
 
 func StoreBotInfo(ctx context.Context, thing string) {
 	var appendNew bool = true
-	p, _ := peer.FromContext(ctx)
-	ipAddr := strings.TrimSpace(strings.Split(p.Addr.String(), ":")[0])
+	ipAddr := peerIPFromContext(ctx)
 	botEsn := strings.TrimSpace(strings.Split(thing, ":")[1])
 	vars.BotInfo.GlobalGUID = "tni1TRsTRTaNSapjo0Y+Sw=="
 	for num, robot := range vars.BotInfo.Robots {
 		if robot.Esn == botEsn {
 			appendNew = false
-			vars.BotInfo.Robots[num].IPAddress = ipAddr
+			if robot.IPAddress != ipAddr {
+				if shouldUsePeerIP(ipAddr) {
+					vars.BotInfo.Robots[num].IPAddress = ipAddr
+				} else {
+					logger.Println("Keeping stored IP " + robot.IPAddress + " for " + botEsn)
+				}
+			}
 		}
 	}
 	if appendNew {

@@ -82,6 +82,7 @@
             <select name="kgProvider" id="kgProvider" form="kgAPIAddForm" onchange="checkKG()">
               <option value="" selected>None</option>
               <option value="openai">OpenAI</option>
+              <option value="openrouter">OpenRouter</option>
               <option value="houndify">Houndify</option>
               <option value="together">Together</option>
               <option value="custom">Custom</option>
@@ -133,6 +134,20 @@
                 <option value="nova">Nova</option>
                 <option value="shimmer">Shimmer</option>
               </select>
+            </span>
+
+            <span id="openRouterInput" style="display: none">
+              <small class="desc">Use OpenRouter directly with an OpenRouter API key and model name.</small><br />
+              <label for="openrouterKey">OpenRouter Key:</label>
+              <input type="text" name="openrouterKey" id="openrouterKey" /><br />
+              <label for="openrouterModel">OpenRouter Model Name:</label>
+              <input type="text" name="openrouterModel" id="openrouterModel" /><br />
+              <label for="openrouterAIPrompt">LLM Prompt <small class="desc">(leave blank for
+                  default)</small>:</label><br />
+              <small><label class="desc" for="openrouterAIPrompt">(default: "You are a helpful, animated robot called
+                  Vector. Keep the response concise yet
+                  informative.")</label></small>
+              <input type="text" name="openrouterAIPrompt" id="openrouterAIPrompt" /><br />
             </span>
 
             <span id="customAIInput" style="display: none">

@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	"github.com/digital-dream-labs/api/go/jdocspb"
 	"github.com/kercre123/wire-pod/chipper/pkg/logger"
 	tokenserver "github.com/kercre123/wire-pod/chipper/pkg/servers/token"
 	"github.com/kercre123/wire-pod/chipper/pkg/vars"
-	"google.golang.org/grpc/peer"
 )
 
 type JdocServer struct {
@@ -29,15 +28,18 @@ func (s *JdocServer) WriteDoc(ctx context.Context, req *jdocspb.WriteDocReq) (*j
 	vars.WriteJdocs()
 
 	esn := strings.Split(req.Thing, ":")[1]
-	p, _ := peer.FromContext(ctx)
-	ipAddr := strings.Split(p.Addr.String(), ":")[0]
+	ipAddr := peerIPFromContext(ctx)
 
 	for ind, bot := range vars.BotInfo.Robots {
 		if bot.Esn == esn && bot.IPAddress != ipAddr {
-			logger.Println(esn + "'s IP address has changed to " + ipAddr + ", noting")
-			vars.BotInfo.Robots[ind].IPAddress = ipAddr
-			writeBytes, _ := json.Marshal(vars.BotInfo)
-			os.WriteFile(vars.BotInfoPath, writeBytes, 0644)
+			if shouldUsePeerIP(ipAddr) {
+				logger.Println(esn + "'s IP address has changed to " + ipAddr + ", noting")
+				vars.BotInfo.Robots[ind].IPAddress = ipAddr
+				writeBytes, _ := json.Marshal(vars.BotInfo)
+				os.WriteFile(vars.BotInfoPath, writeBytes, 0644)
+			} else {
+				logger.Println("Keeping stored IP " + bot.IPAddress + " for " + esn)
+			}
 		}
 	}
 
@@ -55,15 +57,18 @@ func (s *JdocServer) ReadDocs(ctx context.Context, req *jdocspb.ReadDocsReq) (*j
 	logger.Println(req.Items)
 	esn := strings.Split(req.Thing, ":")[1]
 	isAlreadyKnown := IsBotInInfo(esn)
-	p, _ := peer.FromContext(ctx)
-	ipAddr := strings.Split(p.Addr.String(), ":")[0]
+	ipAddr := peerIPFromContext(ctx)
 
 	for ind, bot := range vars.BotInfo.Robots {
 		if bot.Esn == esn && bot.IPAddress != ipAddr {
-			logger.Println(esn + "'s IP address has changed to " + ipAddr + ", noting")
-			vars.BotInfo.Robots[ind].IPAddress = ipAddr
-			writeBytes, _ := json.Marshal(vars.BotInfo)
-			os.WriteFile(vars.BotInfoPath, writeBytes, 0644)
+			if shouldUsePeerIP(ipAddr) {
+				logger.Println(esn + "'s IP address has changed to " + ipAddr + ", noting")
+				vars.BotInfo.Robots[ind].IPAddress = ipAddr
+				writeBytes, _ := json.Marshal(vars.BotInfo)
+				os.WriteFile(vars.BotInfoPath, writeBytes, 0644)
+			} else {
+				logger.Println("Keeping stored IP " + bot.IPAddress + " for " + esn)
+			}
 		}
 	}
 
@@ -102,7 +107,7 @@ func (s *JdocServer) ReadDocs(ctx context.Context, req *jdocspb.ReadDocsReq) (*j
 			for num, pair := range tokenserver.SessionWriteStoreNames {
 				if strings.EqualFold(ipAddr, strings.Split(pair[0], ":")[0]) {
 					sessionMatched = true
-					fullPath := filepath.Join(vars.SDKIniPath, pair[1] + "-" + esn + ".cert")
+					fullPath := filepath.Join(vars.SDKIniPath, pair[1]+"-"+esn+".cert")
 					if _, err := os.Stat(vars.SDKIniPath); err != nil {
 						logger.Println("Creating " + vars.SDKIniPath + " directory")
 						os.Mkdir(vars.SDKIniPath, 0755)

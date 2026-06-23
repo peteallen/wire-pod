@@ -248,6 +248,7 @@ function checkKG() {
     "houndifyInput",
     "togetherInput",
     "customAIInput",
+    "openRouterInput",
     "intentGraphInput",
     "openAIInput",
     "saveChatInput",
@@ -267,6 +268,11 @@ function checkKG() {
       getE("saveChatInput").style.display = "block";
       getE("llmCommandInput").style.display = "block";
       getE("openAIVoiceForEnglishInput").style.display = "block";
+    } else if (provider === "openrouter") {
+      getE("intentGraphInput").style.display = "block";
+      getE("openRouterInput").style.display = "block";
+      getE("saveChatInput").style.display = "block";
+      getE("llmCommandInput").style.display = "block";
     } else if (provider === "together") {
       getE("intentGraphInput").style.display = "block";
       getE("togetherInput").style.display = "block";
@@ -306,6 +312,13 @@ function sendKGAPIKey() {
     data.commands_enable = getE("commandYes").checked
     data.openai_voice = getE("openaiVoice").value
     data.openai_voice_with_english = getE("voiceEnglishYes").checked
+  } else if (provider === "openrouter") {
+    data.key = getE("openrouterKey").value;
+    data.model = getE("openrouterModel").value;
+    data.openai_prompt = getE("openrouterAIPrompt").value;
+    data.intentgraph = getE("intentyes").checked
+    data.save_chat = getE("saveChatYes").checked
+    data.commands_enable = getE("commandYes").checked
   } else if (provider === "custom") {
     data.key = getE("customKey").value;
     data.model = getE("customModel").value;
@@ -366,6 +379,13 @@ function updateKGAPI() {
         getE("intentyes").checked = data.intentgraph
         getE("saveChatYes").checked = data.save_chat
         getE("voiceEnglishYes").checked = data.openai_voice_with_english
+      } else if (data.provider === "openrouter") {
+        getE("openrouterKey").value = data.key;
+        getE("openrouterModel").value = data.model;
+        getE("openrouterAIPrompt").value = data.openai_prompt;
+        getE("commandYes").checked = data.commands_enable
+        getE("intentyes").checked = data.intentgraph
+        getE("saveChatYes").checked = data.save_chat
       } else if (data.provider === "together") {
         getE("togetherKey").value = data.key;
         getE("togetherModel").value = data.model;
