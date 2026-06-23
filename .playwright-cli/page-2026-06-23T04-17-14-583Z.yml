@@ -1,0 +1,153 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - complementary "Primary navigation" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: W
+        - generic [ref=e7]:
+          - paragraph [ref=e8]: Local console
+          - heading "Wire-Pod" [level=1] [ref=e9]
+      - navigation "Console sections" [ref=e10]:
+        - button "Overview" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Overview
+        - button "Robot" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: R
+          - generic [ref=e16]: Robot
+        - button "Setup" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: C
+          - generic [ref=e19]: Setup
+        - button "Intents" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: I
+          - generic [ref=e22]: Intents
+        - button "Logs" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: L
+          - generic [ref=e25]: Logs
+        - button "Updates" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: U
+          - generic [ref=e28]: Updates
+        - button "Appearance" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: A
+          - generic [ref=e31]: Appearance
+    - banner [ref=e32]:
+      - generic [ref=e33]:
+        - strong [ref=e35]: Checking robot
+        - generic [ref=e36]: No robot selected
+      - generic [ref=e37]:
+        - combobox "Active robot" [ref=e38]
+        - button "Refresh console data" [ref=e39] [cursor=pointer]: Refresh
+        - button "Toggle theme" [ref=e40] [cursor=pointer]: Light
+    - main [ref=e41]:
+      - region "Wire-Pod" [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Operator console
+            - heading "Wire-Pod" [level=2] [ref=e46]
+            - paragraph [ref=e47]: Live server, robot, speech, intent, and LLM state in one place.
+          - generic [ref=e48]:
+            - link "Legacy setup" [ref=e49] [cursor=pointer]:
+              - /url: legacy.html
+            - link "Advanced robot page" [ref=e50] [cursor=pointer]:
+              - /url: /sdkapp
+        - generic [ref=e51]:
+          - region "Waiting for data" [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - paragraph [ref=e55]: Vector state
+                - heading "Waiting for data" [level=3] [ref=e56]
+              - generic [ref=e57]: Unverified
+            - generic [ref=e58]:
+              - img "Vector face state" [ref=e60]
+              - generic [ref=e61]:
+                - paragraph [ref=e62]: Checking robot and server state...
+                - generic "Processing pipeline" [ref=e63]:
+                  - generic [ref=e64]:
+                    - generic [ref=e65]: Listen
+                    - strong [ref=e66]: Unknown
+                  - generic [ref=e67]:
+                    - generic [ref=e68]: STT
+                    - strong [ref=e69]: Unknown
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: Intent
+                    - strong [ref=e72]: Unknown
+                  - generic [ref=e73]:
+                    - generic [ref=e74]: LLM
+                    - strong [ref=e75]: Unknown
+                  - generic [ref=e76]:
+                    - generic [ref=e77]: Robot
+                    - strong [ref=e78]: Unknown
+          - region "Robot Status" [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Robot Status" [level=3] [ref=e81]
+              - generic [ref=e82]: Unknown
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - term [ref=e85]: Serial
+                - definition [ref=e86]: Not connected
+              - generic [ref=e87]:
+                - term [ref=e88]: IP address
+                - definition [ref=e89]: Unavailable
+              - generic [ref=e90]:
+                - term [ref=e91]: Battery
+                - definition [ref=e92]:
+                  - progressbar [ref=e93]
+                  - text: Unknown
+              - generic [ref=e94]:
+                - term [ref=e95]: Dock
+                - definition [ref=e96]: Unknown
+          - region "Server Health" [ref=e97]:
+            - generic [ref=e98]:
+              - heading "Server Health" [level=3] [ref=e99]
+              - generic [ref=e100]: Checking
+            - list [ref=e101]:
+              - listitem [ref=e102]:
+                - generic [ref=e103]: API
+                - strong [ref=e104]: Checking
+              - listitem [ref=e105]:
+                - generic [ref=e106]: Initial setup
+                - strong [ref=e107]: Unknown
+              - listitem [ref=e108]:
+                - generic [ref=e109]: Speech
+                - strong [ref=e110]: Unknown
+              - listitem [ref=e111]:
+                - generic [ref=e112]: Knowledge
+                - strong [ref=e113]: Unknown
+              - listitem [ref=e114]:
+                - generic [ref=e115]: Weather
+                - strong [ref=e116]: Unknown
+          - region "Recent Activity" [ref=e117]:
+            - generic [ref=e118]:
+              - heading "Recent Activity" [level=3] [ref=e119]
+              - button "View logs" [ref=e120] [cursor=pointer]
+            - generic [ref=e122]:
+              - time [ref=e123]: 10:17 PM
+              - strong [ref=e124]: LLM
+              - generic [ref=e125]: "LLM response for 0dd1cc2d: Do you mean a specific color? Couldyou tell me the exact color you'd like for my eyes?"
+          - region "Safe Quick Actions" [ref=e126]:
+            - generic [ref=e127]:
+              - heading "Safe Quick Actions" [level=3] [ref=e128]
+              - generic [ref=e129]: No robot
+            - generic [ref=e130]:
+              - button "Wake word" [ref=e131] [cursor=pointer]
+              - button "Dock robot" [ref=e132] [cursor=pointer]
+              - button "Sleep" [ref=e133] [cursor=pointer]
+              - button "Play animation" [ref=e134] [cursor=pointer]
+            - generic [ref=e135]:
+              - generic [ref=e136]: Say text
+              - generic [ref=e137]:
+                - textbox "Say text" [ref=e138]:
+                  - /placeholder: Type a short phrase
+                - button "Send" [ref=e139] [cursor=pointer]
+            - button "Release behavior control" [ref=e140] [cursor=pointer]
+    - complementary "Context panel" [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - heading "Readiness" [level=2] [ref=e144]
+          - generic [ref=e145]: Checking
+        - list [ref=e146]:
+          - listitem [ref=e147]: Loading readiness checks...
+      - generic [ref=e148]:
+        - heading "Current robot" [level=2] [ref=e150]
+        - paragraph [ref=e151]: No robot selected yet.
+        - paragraph [ref=e152]: Live state will update as Wire-Pod reports logs, SDK status, and battery information.

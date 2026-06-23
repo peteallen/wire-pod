@@ -1,227 +1,518 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Wire-Pod</title>
-  <!-- Meta Apple tags for a PWA like experience. -->
+  <title>Wire-Pod Console</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#1e1e1e">
-  <link rel="stylesheet" type="text/css" href="css/style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <script src="https://kit.fontawesome.com/7508f396ac.js" crossorigin="anonymous"></script>
+  <meta name="theme-color" content="#0f151b">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
+  <link rel="stylesheet" href="css/console.css">
+  <script src="js/console.js" defer></script>
 </head>
 
 <body>
-  <div id="outer">
-    <div id="content" class="">
-      <h1>Wire-Pod</h1>
-      <!-- Bot stats, connected and battery -->
-      <div id="botStats"></div>
-      <hr />
-
-      <div class="main-nav-parent">
-        <!--WP settings-->
-        <div class="main-nav-child">
-          <a href="setup.html"><i class="fa-solid fa-gear"></i><br />Server Settings</a>
-        </div>
-        <!--Bot Settings-->
-        <div class="main-nav-child">
-          <a href="/sdkapp"><i class="fa solid fa-toolbox"></i><br />Bot Settings</a>
-        </div>
-        <!--Bot Setup-->
-        <div class="main-nav-child">
-          <a href="#" onclick="showBotAuth(); return false;"><i class="fa solid fa-robot" id="icon-BotAuth"
-              name="icon"></i><br />Bot Setup</a>
-        </div>
-        <!--Custom Intents-->
-        <div class="main-nav-child">
-          <a href="#" onclick="showIntents(); return false;"><i class="fa-solid fa-microphone-lines" id="icon-Intents"
-              name="icon"></i><br />Custom Intents</a>
-        </div>
-        <!--Logs-->
-        <div class="main-nav-child">
-          <a href="#" onclick="showLog(); return false;"><i class="fa-solid fa-file-lines" id="icon-Logs"
-              name="icon"></i><br />Log</a>
-        </div>
-        <!--Version-->
-        <div class="main-nav-child">
-          <a href="#" onclick="showVersion(); return false;"><i class="fa-solid fa-code-compare" id="icon-Version"
-              name="icon"></i><br />Version Info</a>
-        </div>
-        <!--UI Customizer-->
-        <div class="main-nav-child">
-          <a href="#" onclick="showUICustomizer(); return false;"><i class="fa-solid fa-pen-nib" id="icon-Customizer"
-              name="icon"></i><br />UI Settings</a>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">W</div>
+        <div>
+          <p class="eyebrow">Local console</p>
+          <h1>Wire-Pod</h1>
         </div>
       </div>
-      <hr />
 
-      <div id="section-intents" style="display: none">
-        <h2 id="foldable-add" onclick="toggleSection('content-add', 'content-edit')">
-          <span>+</span>
-          Add a custom intent
-        </h2>
-        <div class="content" id="content-add">
-          <p>
-            For more details, see
-            <a href="https://github.com/kercre123/wire-pod/wiki/Custom-Intents" target="_blank">the Custom Intents page of the wiki</a>
-          </p>
-          <div id="addIntentStatus"></div>
-          <form id="intentAddForm">
-            <label for="nameAdd">Custom intent name:</label>
-            <input type="text" name="nameAdd" id="nameAdd" /><br />
-            <label for="descriptionAdd">Custom intent description:</label>
-            <input type="text" name="descriptionAdd" id="descriptionAdd" /><br />
-            <label for="utterancesAdd">Utterances that will trigger the intent (separated by
-              ,):</label>
-            <input type="text" name="utterancesAdd" id="utterancesAdd" /><br />
-            <div id="intentAddSelect"></div>
-            <label for="paramnameAdd">Intent parameter name (not required):</label>
-            <input type="text" name="paramnameAdd" id="paramnameAdd" /><br />
-            <label for="paramvalueAdd">Intent parameter value (not required):</label>
-            <input type="text" name="paramvalueAdd" id="paramvalueAdd" /><br />
-            <label for="execAdd">Path to script/program to execute after sending intent (not
-              required):</label>
-            <input type="text" name="execAdd" id="execAdd" /><br />
-            <label for="execAdd">Arguments for script/program (seperated by ,) (not required):</label>
-            <input type="text" name="execAddArgs" id="execAddArgs" size="50" /><br />
-            <label for="luaAdd">Lua code to run (not required):</label>
-            <textarea id="luaAdd"></textarea>
-          </form>
+      <nav class="nav-list" aria-label="Console sections">
+        <button class="nav-item is-active" type="button" data-view="overview" aria-current="page">
+          <span class="nav-icon nav-icon-overview" aria-hidden="true"></span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" type="button" data-view="robot">
+          <span class="nav-icon nav-icon-robot" aria-hidden="true"></span>
+          <span>Robot</span>
+        </button>
+        <button class="nav-item" type="button" data-view="setup">
+          <span class="nav-icon nav-icon-setup" aria-hidden="true"></span>
+          <span>Setup</span>
+        </button>
+        <button class="nav-item" type="button" data-view="intents">
+          <span class="nav-icon nav-icon-intents" aria-hidden="true"></span>
+          <span>Intents</span>
+        </button>
+        <button class="nav-item" type="button" data-view="logs">
+          <span class="nav-icon nav-icon-logs" aria-hidden="true"></span>
+          <span>Logs</span>
+        </button>
+        <button class="nav-item" type="button" data-view="updates">
+          <span class="nav-icon nav-icon-updates" aria-hidden="true"></span>
+          <span>Updates</span>
+        </button>
+        <button class="nav-item" type="button" data-view="appearance">
+          <span class="nav-icon nav-icon-appearance" aria-hidden="true"></span>
+          <span>Appearance</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-card" aria-live="polite">
+        <span class="status-dot" id="sidebar-server-dot"></span>
+        <div>
+          <strong id="sidebar-server-status">Checking server</strong>
+          <span id="sidebar-version">Version unavailable</span>
+        </div>
+      </div>
+    </aside>
+
+    <header class="topbar">
+      <div class="topbar-status" aria-live="polite">
+        <span class="status-dot" id="top-robot-dot"></span>
+        <strong id="top-robot-status">Checking robot</strong>
+        <span id="top-robot-name">No robot selected</span>
+      </div>
+      <div class="topbar-center">
+        <span id="top-server-endpoint">http://localhost:8080</span>
+        <span class="pipeline-chip" id="top-pipeline-state">State unknown</span>
+      </div>
+      <div class="topbar-actions">
+        <select id="robot-select" aria-label="Active robot"></select>
+        <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh console data">Refresh</button>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme">Theme</button>
+      </div>
+    </header>
+
+    <main id="main" class="main">
+      <section class="view is-active" id="view-overview" data-view-panel="overview" aria-labelledby="overview-title">
+        <div class="page-header">
           <div>
-            <button onclick="sendIntentAdd()">Add intent</button>
+            <p class="eyebrow">Operator console</p>
+            <h2 id="overview-title">Wire-Pod</h2>
+            <p class="subtle">Live server, robot, speech, intent, and LLM state in one place.</p>
           </div>
-          <hr />
+          <div class="header-actions">
+            <a class="button button-secondary" href="legacy.html">Legacy setup</a>
+            <a class="button button-secondary" id="advanced-robot-link" href="/sdkapp">Advanced robot page</a>
+          </div>
         </div>
 
-        <h2 id="foldable-edit" onclick="toggleSection('content-edit', 'content-add')">
-          <span>+</span>
-          Edit/delete a custom intent
-        </h2>
-        <div class="content" id="content-edit">
-          <div id="editSelect"></div>
-          <div id="editIntentStatus"></div>
-          <div id="deleteIntentStatus"></div>
-          <div>
-            <div>
-              <button onclick="editFormCreate()">Edit selected intent</button>
-              <button onclick="deleteSelectedIntent()">
-                Delete selected intent
-              </button>
+        <div class="dashboard-grid">
+          <section class="panel panel-large" aria-labelledby="live-state-title">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Vector state</p>
+                <h3 id="live-state-title">Waiting for data</h3>
+              </div>
+              <span class="badge badge-muted" id="live-state-confidence">Unverified</span>
             </div>
+            <div class="live-state">
+              <div class="robot-portrait">
+                <img id="robot-face" src="assets/facegaze.gif" alt="Vector face state">
+              </div>
+              <div>
+                <p class="state-summary" id="state-summary">Checking robot and server state...</p>
+                <div class="state-context" aria-label="Current robot context">
+                  <div class="state-context-item">
+                    <span>Now</span>
+                    <strong id="state-now">Unknown</strong>
+                  </div>
+                  <div class="state-context-item">
+                    <span>Working on</span>
+                    <strong id="state-task">Nothing active</strong>
+                  </div>
+                </div>
+                <div class="pipeline" aria-label="Processing pipeline">
+                  <div class="pipeline-step" id="pipeline-listen">
+                    <span>Listen</span>
+                    <strong>Unknown</strong>
+                  </div>
+                  <div class="pipeline-step" id="pipeline-stt">
+                    <span>STT</span>
+                    <strong>Unknown</strong>
+                  </div>
+                  <div class="pipeline-step" id="pipeline-intent">
+                    <span>Intent</span>
+                    <strong>Unknown</strong>
+                  </div>
+                  <div class="pipeline-step" id="pipeline-llm">
+                    <span>LLM</span>
+                    <strong>Unknown</strong>
+                  </div>
+                  <div class="pipeline-step" id="pipeline-action">
+                    <span>Robot</span>
+                    <strong>Unknown</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="robot-status-title">
+            <div class="panel-header">
+              <h3 id="robot-status-title">Robot Status</h3>
+              <span class="badge" id="robot-status-badge">Unknown</span>
+            </div>
+            <dl class="fact-list">
+              <div>
+                <dt>Serial</dt>
+                <dd id="robot-serial">Not connected</dd>
+              </div>
+              <div>
+                <dt>IP address</dt>
+                <dd id="robot-ip">Unavailable</dd>
+              </div>
+              <div>
+                <dt>Battery</dt>
+                <dd>
+                  <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="battery-meter">
+                    <span id="battery-meter-fill"></span>
+                  </div>
+                  <span id="battery-label">Unknown</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Dock</dt>
+                <dd id="robot-dock">Unknown</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel" aria-labelledby="server-health-title">
+            <div class="panel-header">
+              <h3 id="server-health-title">Server Health</h3>
+              <span class="badge" id="server-health-badge">Checking</span>
+            </div>
+            <ul class="status-list">
+              <li><span>API</span><strong id="api-health">Checking</strong></li>
+              <li><span>Initial setup</span><strong id="setup-health">Unknown</strong></li>
+              <li><span>Speech</span><strong id="stt-health">Unknown</strong></li>
+              <li><span>Knowledge</span><strong id="knowledge-health">Unknown</strong></li>
+              <li><span>Weather</span><strong id="weather-health">Unknown</strong></li>
+            </ul>
+          </section>
+
+          <section class="panel" aria-labelledby="activity-title">
+            <div class="panel-header">
+              <h3 id="activity-title">Recent Activity</h3>
+              <button class="button button-ghost" type="button" data-view-link="logs">View logs</button>
+            </div>
+            <div class="activity-list" id="activity-list" aria-live="polite">
+              <p class="empty">Waiting for SDK activity...</p>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="quick-actions-title">
+            <div class="panel-header">
+              <h3 id="quick-actions-title">Safe Quick Actions</h3>
+              <span class="badge badge-muted" id="quick-action-context">No robot</span>
+            </div>
+            <div class="action-grid">
+              <button class="action-button" type="button" data-action="wake">Wake word</button>
+              <button class="action-button" type="button" data-action="dock">Dock robot</button>
+              <button class="action-button" type="button" data-action="sleep">Sleep</button>
+              <button class="action-button" type="button" data-action="dance">Play animation</button>
+            </div>
+            <form class="inline-command" id="say-text-form">
+              <label for="say-text">Say text</label>
+              <div class="input-row">
+                <input id="say-text" type="text" placeholder="Type a short phrase">
+                <button class="button button-secondary" type="submit">Send</button>
+              </div>
+            </form>
+            <button class="button button-danger button-full" type="button" data-action="release-control">Release behavior control</button>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-robot" data-view-panel="robot" aria-labelledby="robot-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Robot</p>
+            <h2 id="robot-title">Robot settings and controls</h2>
+            <p class="subtle">Everyday controls stay here. Advanced movement and camera controls remain one click away.</p>
           </div>
-          <div id="editIntentForm"></div>
-          <hr />
-        </div>
-      </div>
-
-      <div id="section-botauth" style="display: none">
-        <h2>Authentication</h2>
-        <hr class="small-hr">
-        <div>
-          <div id="disconnectButton"></div>
-        </div>
-        <div>
-          <div id="botAuth"></div>
-        </div>
-        <hr />
-        <div>
-          <h3>Configure an OSKR/dev-unlocked robot</h3>
-          <hr class="small-hr">
-          <small class="desc">Works with firmware 1.4 and above.</small>
-          <div id="oskrSetupProgress"></div>
-          <div id="oskrSetup">
-            <p><b>If you have an OSKR/dev-unlocked bot;</b> enter the bot's IP
-              address and upload the bot's SSH key here, then click "Set up
-              bot". After that, use the above section to finish setting up
-              your bot.</p>
-            <hr class="small-hr">
-            <input class="tinput" type="text" id="sshIp" name="sshIp" placeholder="Bot IP address" /><br />
-            <input type="file" id="sshKeyFile" name="sshKeyFile" /><br />
-            <hr class="small-hr">
-            <button onclick="doSSHSetup()">Set up bot</button>
+          <div class="header-actions">
+            <a class="button button-secondary" id="robot-settings-link" href="/sdkapp">Advanced settings</a>
+            <a class="button button-secondary" id="robot-control-link" href="/sdkapp">Control page</a>
           </div>
         </div>
-        <hr />
-      </div>
+        <div class="two-column">
+          <section class="panel" aria-labelledby="robot-preferences-title">
+            <div class="panel-header">
+              <h3 id="robot-preferences-title">Current preferences</h3>
+              <span class="badge badge-muted" id="robot-settings-status">Not loaded</span>
+            </div>
+            <dl class="fact-list">
+              <div><dt>Volume</dt><dd id="setting-volume">Unknown</dd></div>
+              <div><dt>Eye color</dt><dd id="setting-eye-color">Unknown</dd></div>
+              <div><dt>Locale</dt><dd id="setting-locale">Unknown</dd></div>
+              <div><dt>Time format</dt><dd id="setting-time">Unknown</dd></div>
+              <div><dt>Units</dt><dd id="setting-units">Unknown</dd></div>
+              <div><dt>Location</dt><dd id="setting-location">Unknown</dd></div>
+              <div><dt>Time zone</dt><dd id="setting-timezone">Unknown</dd></div>
+            </dl>
+          </section>
+          <section class="panel" aria-labelledby="robot-actions-title">
+            <div class="panel-header">
+              <h3 id="robot-actions-title">Action controls</h3>
+              <span class="badge badge-warning">Moves robot</span>
+            </div>
+            <div class="action-grid">
+              <button class="action-button" type="button" data-action="explore">Explore</button>
+              <button class="action-button" type="button" data-action="fetch-cube">Fetch cube</button>
+              <button class="action-button" type="button" data-action="go-home">Go home</button>
+              <button class="action-button" type="button" data-action="take-photo">Take photo</button>
+            </div>
+            <p class="helper">These send existing SDK cloud intents to the selected robot. Use the advanced control page for camera, keyboard movement, mirror mode, and audio upload.</p>
+          </section>
+          <section class="panel panel-wide" aria-labelledby="robot-stats-title">
+            <div class="panel-header">
+              <h3 id="robot-stats-title">Robot statistics</h3>
+              <button class="button button-ghost" type="button" id="refresh-stats">Refresh stats</button>
+            </div>
+            <div class="stat-grid" id="robot-stats">
+              <p class="empty">No robot statistics loaded yet.</p>
+            </div>
+          </section>
+        </div>
+      </section>
 
-      <div id="section-log" style="display: none">
-        <h2>Log</h2>
-        <hr class="small-hr">
-        <div class="center">
-          <div style="text-align:left">
-            <input id="logdebug" name="logdebug" type="checkbox" />
-            <label class="checkbox-label" for="logdebug">Show all logs</label><br />
-            <input id="logscrollbottom" name="logscrollbottom" type="checkbox" />
-            <label class="checkbox-label" for="logscrollbottom">Scroll to bottom</label>
+      <section class="view" id="view-setup" data-view-panel="setup" aria-labelledby="setup-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Setup</p>
+            <h2 id="setup-title">Guided server setup</h2>
+            <p class="subtle">Connection, speech, weather, and knowledge settings without the old hidden-section maze.</p>
+          </div>
+          <a class="button button-secondary" href="legacy.html">Open legacy pairing flow</a>
+        </div>
+        <div class="settings-stack">
+          <section class="panel" aria-labelledby="connection-title">
+            <div class="panel-header">
+              <h3 id="connection-title">Connection mode</h3>
+              <span class="badge" id="connection-badge">Unknown</span>
+            </div>
+            <form class="settings-form" id="connection-form">
+              <label for="connection-mode">Robot connection method</label>
+              <select id="connection-mode">
+                <option value="ep">Escape Pod</option>
+                <option value="ip">IP address</option>
+              </select>
+              <label for="connection-port">Custom port</label>
+              <input id="connection-port" type="text" inputmode="numeric" placeholder="443">
+              <p class="helper">Escape Pod is the normal production robot path. IP mode is for OSKR or dev-unlocked robots.</p>
+              <button class="button button-primary" type="submit">Apply connection mode</button>
+              <p class="form-status" id="connection-status" role="status"></p>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="speech-title">
+            <div class="panel-header">
+              <h3 id="speech-title">Speech to text</h3>
+              <span class="badge" id="speech-badge">Unknown</span>
+            </div>
+            <form class="settings-form" id="speech-form">
+              <label for="stt-provider">STT provider</label>
+              <select id="stt-provider">
+                <option value="vosk">Vosk</option>
+                <option value="whisper.cpp">Whisper.cpp</option>
+              </select>
+              <label for="stt-language">Language</label>
+              <select id="stt-language"></select>
+              <label for="stt-model">Whisper model</label>
+              <select id="stt-model"></select>
+              <p class="helper">Changing speech settings may download a model and reload the voice processor.</p>
+              <button class="button button-primary" type="submit">Save speech settings</button>
+              <p class="form-status" id="speech-status" role="status"></p>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="knowledge-title">
+            <div class="panel-header">
+              <h3 id="knowledge-title">Knowledge and LLM</h3>
+              <span class="badge" id="knowledge-badge">Unknown</span>
+            </div>
+            <form class="settings-form" id="knowledge-form">
+              <label for="kg-provider">Provider</label>
+              <select id="kg-provider">
+                <option value="">None</option>
+                <option value="openai">OpenAI</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="houndify">Houndify</option>
+                <option value="together">Together</option>
+                <option value="custom">Custom OpenAI-compatible endpoint</option>
+              </select>
+              <div class="conditional-grid" id="kg-provider-fields"></div>
+              <label class="switch-row">
+                <input id="kg-intentgraph" type="checkbox">
+                <span>Use LLM fallback when intent matching fails</span>
+              </label>
+              <label class="switch-row">
+                <input id="kg-commands" type="checkbox">
+                <span>Allow LLM responses to trigger robot actions</span>
+              </label>
+              <label class="switch-row">
+                <input id="kg-save-chat" type="checkbox">
+                <span>Remember conversation context</span>
+              </label>
+              <button class="button button-primary" type="submit">Save knowledge settings</button>
+              <p class="form-status" id="knowledge-status" role="status"></p>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="weather-title">
+            <div class="panel-header">
+              <h3 id="weather-title">Weather</h3>
+              <span class="badge" id="weather-badge">Unknown</span>
+            </div>
+            <form class="settings-form" id="weather-form">
+              <label for="weather-provider">Provider</label>
+              <select id="weather-provider">
+                <option value="">None</option>
+                <option value="openweathermap.org">OpenWeatherMap</option>
+                <option value="weatherapi.com">WeatherAPI</option>
+              </select>
+              <label for="weather-key">API key</label>
+              <input id="weather-key" type="password" autocomplete="off" placeholder="Leave blank to keep existing key">
+              <button class="button button-primary" type="submit">Save weather settings</button>
+              <p class="form-status" id="weather-status" role="status"></p>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-intents" data-view-panel="intents" aria-labelledby="intents-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Custom intents</p>
+            <h2 id="intents-title">Intent routing</h2>
+            <p class="subtle">Add, inspect, and remove custom utterance mappings.</p>
+          </div>
+          <a class="button button-secondary" href="https://github.com/kercre123/wire-pod/wiki/Custom-Intents" target="_blank" rel="noreferrer">Intent docs</a>
+        </div>
+        <div class="two-column">
+          <section class="panel" aria-labelledby="intent-list-title">
+            <div class="panel-header">
+              <h3 id="intent-list-title">Existing intents</h3>
+              <button class="button button-ghost" type="button" id="refresh-intents">Refresh</button>
+            </div>
+            <div class="intent-list" id="intent-list">
+              <p class="empty">No custom intents loaded.</p>
+            </div>
+          </section>
+          <section class="panel" aria-labelledby="intent-form-title">
+            <div class="panel-header">
+              <h3 id="intent-form-title">Add intent</h3>
+            </div>
+            <form class="settings-form" id="intent-form">
+              <label for="intent-name">Name</label>
+              <input id="intent-name" type="text" placeholder="morning_playlist">
+              <label for="intent-description">Description</label>
+              <input id="intent-description" type="text" placeholder="Starts the morning playlist">
+              <label for="intent-utterances">Utterances</label>
+              <input id="intent-utterances" type="text" placeholder="play my morning playlist,start music">
+              <label for="intent-target">Robot intent to send</label>
+              <select id="intent-target"></select>
+              <label for="intent-exec">Optional script path</label>
+              <input id="intent-exec" type="text" placeholder="/path/to/script">
+              <label for="intent-lua">Optional Lua</label>
+              <textarea id="intent-lua" rows="5"></textarea>
+              <button class="button button-primary" type="submit">Add custom intent</button>
+              <p class="form-status" id="intent-status" role="status"></p>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-logs" data-view-panel="logs" aria-labelledby="logs-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Logs</p>
+            <h2 id="logs-title">Server log stream</h2>
+            <p class="subtle">Live logs help explain speech, intent, LLM, and robot execution state.</p>
+          </div>
+          <div class="header-actions">
+            <label class="switch-row switch-compact">
+              <input id="log-debug" type="checkbox">
+              <span>Debug logs</span>
+            </label>
+            <label class="switch-row switch-compact">
+              <input id="log-autoscroll" type="checkbox" checked>
+              <span>Auto-scroll</span>
+            </label>
+            <button class="button button-secondary" type="button" id="copy-logs">Copy logs</button>
           </div>
         </div>
-        <textarea id="botTranscriptedTextArea" rows="7" cols="50">
-          loading log...
-        </textarea>
-        <hr class="log-hr" />
-      </div>
+        <section class="panel log-panel">
+          <pre id="log-output">Loading logs...</pre>
+        </section>
+      </section>
 
-      <div id="section-version" style="display: none">
-        <h2>Version</h2>
-        <hr class="small-hr">
-        <div id="versionDiv">
-          <button onclick="checkUpdate()">
-            Check For Update
-          </button>
-          <hr class="small-hr">
-          <p id="cVersion"></p>
-          <small class="desc" style="display: none;" id="cCommit"></small>
-          <p id="aUpdate"></p>
-          <a id="updateGuideLink" style="display: none" target="_blank"
-            href="https://github.com/kercre123/wire-pod/wiki/Things-to-Know#updating-wire-pod">Update Guide</a>
+      <section class="view" id="view-updates" data-view-panel="updates" aria-labelledby="updates-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Updates</p>
+            <h2 id="updates-title">Version and maintenance</h2>
+            <p class="subtle">Check what is installed and whether upstream has changed.</p>
+          </div>
+          <button class="button button-primary" id="check-updates" type="button">Check for updates</button>
         </div>
-        <hr />
-      </div>
+        <section class="panel">
+          <div class="version-grid" id="version-details">
+            <p class="empty">No version check has run yet.</p>
+          </div>
+          <a class="button button-secondary" href="https://github.com/kercre123/wire-pod/wiki/Things-to-Know#updating-wire-pod" target="_blank" rel="noreferrer">Open update guide</a>
+        </section>
+      </section>
 
-      <div id="section-uicustomizer" style="display: none">
-        <h2>UI Customizer</h2>
-        <hr class="small-hr">
-        <p>Accent Color</p>
-        <select onchange="setUIColor()" id="accent-color-choose">
-          <option value="teal" selected="selected">Teal (default)</option>
-          <option value="orange">Orange</option>
-          <option value="yellow">Yellow</option>
-          <option value="lime">Lime</option>
-          <option value="sapphire">Sapphire</option>
-          <option value="purple">Purple</option>
-          <option value="green">Green</option>
-        </select>
-        <hr class="small-hr">
-        <p>Body Font</p>
-        <select onchange="setUIFont()" id="body-font-choose">
-          <option style="font-family: 'DroidSans';" value="droidsans" selected="selected">Droid Sans (default)</option>
-          <option style="font-family: 'IBMVGA';" value="ibmvga">IBM VGA 8x16 (retro)</option>
-        </select>
-        <hr />
-      </div>
+      <section class="view" id="view-appearance" data-view-panel="appearance" aria-labelledby="appearance-title">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Appearance</p>
+            <h2 id="appearance-title">Theme</h2>
+            <p class="subtle">Light and dark modes use the same layout and semantic status colors.</p>
+          </div>
+        </div>
+        <section class="panel">
+          <div class="theme-grid">
+            <button class="theme-card" type="button" data-theme-choice="system">
+              <strong>System</strong>
+              <span>Follow this device</span>
+            </button>
+            <button class="theme-card" type="button" data-theme-choice="dark">
+              <strong>Dark</strong>
+              <span>Operator console</span>
+            </button>
+            <button class="theme-card" type="button" data-theme-choice="light">
+              <strong>Light</strong>
+              <span>Bright workspace</span>
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
 
-    </div>
+    <aside class="inspector" aria-label="Context panel">
+      <section class="inspector-panel">
+        <div class="panel-header">
+          <h2>Readiness</h2>
+          <span class="badge" id="readiness-badge">Checking</span>
+        </div>
+        <ul class="check-list" id="readiness-list">
+          <li>Loading readiness checks...</li>
+        </ul>
+      </section>
+      <section class="inspector-panel">
+        <div class="panel-header">
+          <h2>Current robot</h2>
+        </div>
+        <p id="inspector-robot">No robot selected yet.</p>
+        <p class="helper" id="inspector-state-note">Live state will update as Vector reports SDK activity.</p>
+      </section>
+    </aside>
   </div>
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 </body>
-
-<script src="./js/main.js"></script>
-<script src="./js/ble.js"></script>
-<script src="./js/ssh.js"></script>
-<script src="./js/ui.js"></script>
-<script src="./sdkapp/js/common.js"></script>
-<script src="./js/battery.js"></script>
-<!-- <script src="./sdkapp/js/main.js"></script> -->
-<script>
-  checkInited();
-  updateIntentSelection("editSelect");
-  updateIntentSelection("deleteSelect");
-  createIntentSelect("intentAddSelect");
-  processBotStats();
-</script>
 
 </html>

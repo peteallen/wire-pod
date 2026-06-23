@@ -1,0 +1,5 @@
+[  209775ms] [WARNING] Unable to refresh robot settings TypeError: Failed to fetch
+    at postJson (http://localhost:8080/js/console.js:929:26)
+    at refreshSettings (http://localhost:8080/js/console.js:280:28)
+    at refreshRobotDetails (http://localhost:8080/js/console.js:266:47)
+    at refreshFast (http://localhost:8080/js/console.js:235:9) @ http://localhost:8080/js/console.js:282

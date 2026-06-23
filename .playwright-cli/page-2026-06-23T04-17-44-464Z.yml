@@ -1,0 +1,177 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - complementary "Primary navigation" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: W
+        - generic [ref=e7]:
+          - paragraph [ref=e8]: Local console
+          - heading "Wire-Pod" [level=1] [ref=e9]
+      - navigation "Console sections" [ref=e10]:
+        - button "Overview" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Overview
+        - button "Robot" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: R
+          - generic [ref=e16]: Robot
+        - button "Setup" [active] [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: C
+          - generic [ref=e19]: Setup
+        - button "Intents" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: I
+          - generic [ref=e22]: Intents
+        - button "Logs" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: L
+          - generic [ref=e25]: Logs
+        - button "Updates" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: U
+          - generic [ref=e28]: Updates
+        - button "Appearance" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: A
+          - generic [ref=e31]: Appearance
+    - banner [ref=e32]:
+      - generic [ref=e33]:
+        - strong [ref=e35]: Robot connected
+        - generic [ref=e36]: 0dd1cc2d at 192.168.2.8
+      - generic [ref=e37]:
+        - combobox "Active robot" [ref=e38]:
+          - option "0dd1cc2d" [selected]
+        - button "Refresh console data" [ref=e39] [cursor=pointer]: Refresh
+        - button "Toggle theme" [ref=e40] [cursor=pointer]: Light
+    - main [ref=e41]:
+      - region "Guided server setup" [ref=e175]:
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - paragraph [ref=e178]: Setup
+            - heading "Guided server setup" [level=2] [ref=e179]
+            - paragraph [ref=e180]: Connection, speech, weather, and knowledge settings without the old hidden-section maze.
+          - link "Open legacy pairing flow" [ref=e181] [cursor=pointer]:
+            - /url: legacy.html
+        - generic [ref=e182]:
+          - region "Connection mode" [ref=e183]:
+            - generic [ref=e184]:
+              - heading "Connection mode" [level=3] [ref=e185]
+              - generic [ref=e186]: Escape Pod
+            - generic [ref=e187]:
+              - generic [ref=e188]: Robot connection method
+              - combobox "Robot connection method" [ref=e189]:
+                - option "Escape Pod" [selected]
+                - option "IP address"
+              - generic [ref=e190]: Custom port
+              - textbox "Custom port" [ref=e191]:
+                - /placeholder: "443"
+                - text: "443"
+              - paragraph [ref=e192]: Escape Pod is the normal production robot path. IP mode is for OSKR or dev-unlocked robots.
+              - button "Apply connection mode" [ref=e193] [cursor=pointer]
+              - status [ref=e194]
+          - region "Speech to text" [ref=e195]:
+            - generic [ref=e196]:
+              - heading "Speech to text" [level=3] [ref=e197]
+              - generic [ref=e198]: whisper.cpp
+            - generic [ref=e199]:
+              - generic [ref=e200]: STT provider
+              - combobox "STT provider" [ref=e201]:
+                - option "Vosk"
+                - option "Whisper.cpp" [selected]
+              - generic [ref=e202]: Language
+              - combobox "Language" [ref=e203]:
+                - option "English (US)" [selected]
+                - option "Italian (IT)"
+                - option "Spanish (ES)"
+                - option "French (FR)"
+                - option "German (DE)"
+                - option "Portuguese (BR)"
+                - option "Polish (PL)"
+                - option "Turkish (TR)"
+                - option "Korean (KR)"
+                - option "Chinese (CN)"
+                - option "Russian (RU)"
+                - option "Dutch (NL)"
+                - option "Ukrainian (UA)"
+                - option "Vietnamese (VN)"
+              - generic [ref=e204]: Whisper model
+              - combobox "Whisper model" [ref=e205]:
+                - option "Tiny" [selected]
+                - option "Base"
+                - option "Small"
+                - option "Medium"
+                - option "Large v3"
+                - option "Large v3 q5_0"
+              - paragraph [ref=e206]: Changing speech settings may download a model and reload the voice processor.
+              - button "Save speech settings" [ref=e207] [cursor=pointer]
+              - status [ref=e208]
+          - region "Knowledge and LLM" [ref=e209]:
+            - generic [ref=e210]:
+              - heading "Knowledge and LLM" [level=3] [ref=e211]
+              - generic [ref=e212]: Configured
+            - generic [ref=e213]:
+              - generic [ref=e214]: Provider
+              - combobox "Provider" [ref=e215]:
+                - option "None"
+                - option "OpenAI"
+                - option "OpenRouter" [selected]
+                - option "Houndify"
+                - option "Together"
+                - option "Custom OpenAI-compatible endpoint"
+              - generic [ref=e216]:
+                - generic [ref=e217]: OpenRouter key
+                - textbox "OpenRouter key" [ref=e218]:
+                  - /placeholder: Configured. Leave blank to keep existing key.
+                - generic [ref=e219]: Model
+                - textbox "Model" [ref=e220]:
+                  - /placeholder: openai/gpt-oss-120b:nitro
+                  - text: openai/gpt-oss-120b:nitro
+                - generic [ref=e221]: Robot prompt
+                - textbox "Robot prompt" [ref=e222]: You are a helpful, animated robot named Vector. If you can't find a matching intent, just say something entertaining in response.
+              - generic [ref=e223]:
+                - checkbox "Use LLM fallback when intent matching fails" [checked] [ref=e224]
+                - generic [ref=e225]: Use LLM fallback when intent matching fails
+              - generic [ref=e226]:
+                - checkbox "Allow LLM responses to trigger robot actions" [checked] [ref=e227]
+                - generic [ref=e228]: Allow LLM responses to trigger robot actions
+              - generic [ref=e229]:
+                - checkbox "Remember conversation context" [checked] [ref=e230]
+                - generic [ref=e231]: Remember conversation context
+              - button "Save knowledge settings" [ref=e232] [cursor=pointer]
+              - status [ref=e233]
+          - region "Weather" [ref=e234]:
+            - generic [ref=e235]:
+              - heading "Weather" [level=3] [ref=e236]
+              - generic [ref=e237]: Disabled
+            - generic [ref=e238]:
+              - generic [ref=e239]: Provider
+              - combobox "Provider" [ref=e240]:
+                - option "None" [selected]
+                - option "OpenWeatherMap"
+                - option "WeatherAPI"
+              - generic [ref=e241]: API key
+              - textbox "API key" [ref=e242]:
+                - /placeholder: Leave blank to keep existing key
+              - button "Save weather settings" [ref=e243] [cursor=pointer]
+              - status [ref=e244]
+    - complementary "Context panel" [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - heading "Readiness" [level=2] [ref=e144]
+          - generic [ref=e145]: 5/5 ready
+        - list [ref=e146]:
+          - listitem [ref=e245]:
+            - generic [ref=e246]: Server API
+            - strong [ref=e247]: Responding
+          - listitem [ref=e248]:
+            - generic [ref=e249]: Initial setup
+            - strong [ref=e250]: Complete
+          - listitem [ref=e251]:
+            - generic [ref=e252]: Robot SDK
+            - strong [ref=e253]: 1 robot found
+          - listitem [ref=e254]:
+            - generic [ref=e255]: Speech
+            - strong [ref=e256]: whisper.cpp
+          - listitem [ref=e257]:
+            - generic [ref=e258]: Knowledge
+            - strong [ref=e259]: openrouter
+      - generic [ref=e148]:
+        - heading "Current robot" [level=2] [ref=e150]
+        - paragraph [ref=e151]: 0dd1cc2d at 192.168.2.8
+        - paragraph [ref=e152]: This state is inferred from the most recent server log line.

@@ -1,0 +1,82 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - complementary "Primary navigation" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: W
+        - generic [ref=e7]:
+          - paragraph [ref=e8]: Local console
+          - heading "Wire-Pod" [level=1] [ref=e9]
+      - navigation "Console sections" [ref=e10]:
+        - button "Overview" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Overview
+        - button "Robot" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: R
+          - generic [ref=e16]: Robot
+        - button "Setup" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: C
+          - generic [ref=e19]: Setup
+        - button "Intents" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: I
+          - generic [ref=e22]: Intents
+        - button "Logs" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: L
+          - generic [ref=e25]: Logs
+        - button "Updates" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: U
+          - generic [ref=e28]: Updates
+        - button "Appearance" [active] [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: A
+          - generic [ref=e31]: Appearance
+    - banner [ref=e32]:
+      - generic [ref=e33]:
+        - strong [ref=e35]: Robot connected
+        - generic [ref=e36]: 0dd1cc2d at 192.168.2.8
+      - generic [ref=e37]:
+        - combobox "Active robot" [ref=e38]:
+          - option "0dd1cc2d" [selected]
+        - button "Refresh console data" [ref=e39] [cursor=pointer]: Refresh
+        - button "Toggle theme" [ref=e40] [cursor=pointer]: Light
+    - main [ref=e41]:
+      - region "Theme" [ref=e327]:
+        - generic [ref=e329]:
+          - paragraph [ref=e330]: Appearance
+          - heading "Theme" [level=2] [ref=e331]
+          - paragraph [ref=e332]: Light and dark modes use the same layout and semantic status colors.
+        - generic [ref=e334]:
+          - button "System Follow this device" [ref=e335] [cursor=pointer]:
+            - strong [ref=e336]: System
+            - generic [ref=e337]: Follow this device
+          - button "Dark Operator console" [ref=e338] [cursor=pointer]:
+            - strong [ref=e339]: Dark
+            - generic [ref=e340]: Operator console
+          - button "Light Bright workspace" [ref=e341] [cursor=pointer]:
+            - strong [ref=e342]: Light
+            - generic [ref=e343]: Bright workspace
+    - complementary "Context panel" [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - heading "Readiness" [level=2] [ref=e144]
+          - generic [ref=e145]: 5/5 ready
+        - list [ref=e146]:
+          - listitem [ref=e312]:
+            - generic [ref=e313]: Server API
+            - strong [ref=e314]: Responding
+          - listitem [ref=e315]:
+            - generic [ref=e316]: Initial setup
+            - strong [ref=e317]: Complete
+          - listitem [ref=e318]:
+            - generic [ref=e319]: Robot SDK
+            - strong [ref=e320]: 1 robot found
+          - listitem [ref=e321]:
+            - generic [ref=e322]: Speech
+            - strong [ref=e323]: whisper.cpp
+          - listitem [ref=e324]:
+            - generic [ref=e325]: Knowledge
+            - strong [ref=e326]: openrouter
+      - generic [ref=e148]:
+        - heading "Current robot" [level=2] [ref=e150]
+        - paragraph [ref=e151]: 0dd1cc2d at 192.168.2.8
+        - paragraph [ref=e152]: This state is inferred from the most recent server log line.

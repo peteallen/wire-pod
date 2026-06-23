@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"time"
 
@@ -29,7 +28,13 @@ const (
 	ActionGetImage   = 3
 	ActionNewRequest = 4
 	// arg: sound file
-	ActionPlaySound = 4
+	ActionPlaySound = 5
+	// arg: #RRGGBB eye color
+	ActionSetEyeColor = 6
+	// arg: now
+	ActionGoToCharger = 7
+	// arg: built-in Vector intent name
+	ActionRunBuiltinIntent = 8
 )
 
 var animationMap [][2]string = [][2]string{
@@ -132,6 +137,27 @@ var ValidLLMCommands []LLMCommand = []LLMCommand{
 		Action:          ActionNewRequest,
 		SupportedModels: []string{"all"},
 	},
+	{
+		Command:         "setEyeColor",
+		Description:     "Sets Vector's eye color. Use when the user asks to change Vector's eyes or eye color. Pick the best RGB hex color for the requested color.",
+		ParamChoices:    "#RRGGBB, for example #008080 for teal or #E6E6FA for lavender",
+		Action:          ActionSetEyeColor,
+		SupportedModels: []string{"all"},
+	},
+	{
+		Command:         "goToCharger",
+		Description:     "Sends Vector home to his charger. Use when the user asks Vector to go home, dock, charge, return to base, or get on the charger.",
+		ParamChoices:    "now",
+		Action:          ActionGoToCharger,
+		SupportedModels: []string{"all"},
+	},
+	{
+		Command:         "runBuiltinIntent",
+		Description:     "Runs one of Vector's built-in firmware intents. Use for direct robot commands that do not need custom arguments.",
+		ParamChoices:    strings.Join(robotIntentNames(), ", "),
+		Action:          ActionRunBuiltinIntent,
+		SupportedModels: []string{"all"},
+	},
 	// {
 	// 	Command:      "playSound",
 	// 	Description:  "Plays a sound on the robot.",
@@ -150,27 +176,11 @@ func ModelIsSupported(cmd LLMCommand, model string) bool {
 }
 
 func CreatePrompt(origPrompt string, model string, isKG bool) string {
-	prompt := origPrompt + "\n\n" + "Keep in mind, user input comes from speech-to-text software, so respond accordingly. Use normal sentence punctuation. No special characters, especially these: & ^ * # @ -. No lists. No formatting."
+	mode := promptModeNoCommands
 	if vars.APIConfig.Knowledge.CommandsEnable {
-		prompt = prompt + "\n\n" + "You are running ON an Anki Vector robot. You have a set of commands. If you include an emoji, I will make you start over. If you want to use a command but it doesn't exist or your desired parameter isn't in the list, avoid using the command. The format is {{command||parameter}}. You can embed these in sentences. Example: \"User: How are you feeling? | Response: \"{{playAnimationWI||sad}} I'm feeling sad...\". Square brackets ([]) are not valid.\n\nUse the playAnimation or playAnimationWI commands if you want to express emotion! You are very animated and good at following instructions. Animation takes precendence over words. You are to include many animations in your response.\n\nHere is every valid command:"
-		for _, cmd := range ValidLLMCommands {
-			if ModelIsSupported(cmd, model) {
-				promptAppendage := "\n\nCommand Name: " + cmd.Command + "\nDescription: " + cmd.Description + "\nParameter choices: " + cmd.ParamChoices
-				prompt = prompt + promptAppendage
-			}
-		}
-		if isKG && vars.APIConfig.Knowledge.SaveChat {
-			promptAppentage := "\n\nNOTE: You are in 'conversation' mode. If you ask the user a question near the end of your response, you MUST use newVoiceRequest. If you decide you want to end the conversation, you should not use it."
-			prompt = prompt + promptAppentage
-		} else {
-			promptAppentage := "\n\nNOTE: You are NOT in 'conversation' mode. Refrain from asking the user any questions and from using newVoiceRequest."
-			prompt = prompt + promptAppentage
-		}
+		mode = promptModeTools
 	}
-	if os.Getenv("DEBUG_PRINT_PROMPT") == "true" {
-		logger.Println(prompt)
-	}
-	return prompt
+	return createPromptForMode(origPrompt, model, isKG, mode)
 }
 
 func GetActionsFromString(input string) []RobotAction {
@@ -198,7 +208,16 @@ func GetActionsFromString(input string) []RobotAction {
 			continue
 		}
 
-		cmdPlusParam := strings.Split(strings.TrimSpace(strings.Split(spl, "}}")[0]), "||")
+		cmdPlusParam := strings.SplitN(strings.TrimSpace(strings.Split(spl, "}}")[0]), "||", 2)
+		if len(cmdPlusParam) != 2 {
+			logger.Println("LLM tried malformed legacy command markup: " + strings.TrimSpace(strings.Split(spl, "}}")[0]))
+			action := RobotAction{
+				Action:    ActionSayText,
+				Parameter: strings.TrimSpace(spl),
+			}
+			actions = append(actions, action)
+			continue
+		}
 		cmd := strings.TrimSpace(cmdPlusParam[0])
 		param := strings.TrimSpace(cmdPlusParam[1])
 		action := CmdParamToAction(cmd, param)
@@ -286,15 +305,20 @@ func DoPlaySound(sound string, robot *vector.Vector) error {
 }
 
 func DoSayText(input string, robot *vector.Vector) error {
-
-	// just before vector speaks
-	removeSpecialCharacters(input)
+	if robot == nil {
+		return errors.New("robot connection is not available")
+	}
+	input = strings.TrimSpace(removeSpecialCharacters(input))
+	if input == "" {
+		return nil
+	}
 
 	if (vars.APIConfig.STT.Language != "en-US" && vars.APIConfig.Knowledge.Provider == "openai") || vars.APIConfig.Knowledge.OpenAIVoiceWithEnglish {
 		err := DoSayText_OpenAI(robot, input)
 		return err
 	}
-	robot.Conn.SayText(
+	logger.Println("Speaking LLM text: " + input)
+	_, err := robot.Conn.SayText(
 		context.Background(),
 		&vectorpb.SayTextRequest{
 			Text:           input,
@@ -302,6 +326,9 @@ func DoSayText(input string, robot *vector.Vector) error {
 			DurationScalar: 0.95,
 		},
 	)
+	if err != nil {
+		return fmt.Errorf("say text failed: %w", err)
+	}
 	return nil
 }
 
@@ -610,6 +637,18 @@ func DoNewRequest(robot *vector.Vector) {
 	robot.Conn.AppIntent(context.Background(), &vectorpb.AppIntentRequest{Intent: "knowledge_question"})
 }
 
+func DoGoToCharger(robot *vector.Vector) error {
+	if robot == nil {
+		return errors.New("robot connection is not available")
+	}
+	_, err := robot.Conn.DriveOnCharger(context.Background(), &vectorpb.DriveOnChargerRequest{})
+	if err != nil {
+		return err
+	}
+	logger.Println("Sent Vector to charger")
+	return nil
+}
+
 func PerformActions(msgs []openai.ChatCompletionMessage, actions []RobotAction, robot *vector.Vector, stopStop chan bool) bool {
 	// assuming we have behavior control already
 	stopPerforming := false
@@ -624,7 +663,9 @@ func PerformActions(msgs []openai.ChatCompletionMessage, actions []RobotAction, 
 		}
 		switch {
 		case action.Action == ActionSayText:
-			DoSayText(action.Parameter, robot)
+			if err := DoSayText(action.Parameter, robot); err != nil {
+				logger.Println("Unable to speak LLM text: " + err.Error())
+			}
 		case action.Action == ActionPlayAnimation:
 			DoPlayAnimation(action.Parameter, robot)
 		case action.Action == ActionPlayAnimationWI:
@@ -637,6 +678,18 @@ func PerformActions(msgs []openai.ChatCompletionMessage, actions []RobotAction, 
 			return true
 		case action.Action == ActionPlaySound:
 			DoPlaySound(action.Parameter, robot)
+		case action.Action == ActionSetEyeColor:
+			if err := DoSetEyeColor(action.Parameter, robot); err != nil {
+				logger.Println("Unable to set eye color: " + err.Error())
+			}
+		case action.Action == ActionGoToCharger:
+			if err := DoGoToCharger(robot); err != nil {
+				logger.Println("Unable to send Vector to charger: " + err.Error())
+			}
+		case action.Action == ActionRunBuiltinIntent:
+			if err := DoRunBuiltinIntent(action.Parameter, robot); err != nil {
+				logger.Println("Unable to run built-in Vector intent: " + err.Error())
+			}
 		}
 	}
 	WaitForAnim_Queue(robot.Cfg.SerialNo)

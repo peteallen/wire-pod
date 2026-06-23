@@ -1,0 +1,82 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - complementary "Primary navigation" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: W
+        - generic [ref=e7]:
+          - paragraph [ref=e8]: Local console
+          - heading "Wire-Pod" [level=1] [ref=e9]
+      - navigation "Console sections" [ref=e10]:
+        - button "Overview" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Overview
+        - button "Robot" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: R
+          - generic [ref=e16]: Robot
+        - button "Setup" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: C
+          - generic [ref=e19]: Setup
+        - button "Intents" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: I
+          - generic [ref=e22]: Intents
+        - button "Logs" [active] [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: L
+          - generic [ref=e25]: Logs
+        - button "Updates" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: U
+          - generic [ref=e28]: Updates
+        - button "Appearance" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: A
+          - generic [ref=e31]: Appearance
+    - banner [ref=e32]:
+      - generic [ref=e33]:
+        - strong [ref=e35]: Robot connected
+        - generic [ref=e36]: 0dd1cc2d at 192.168.2.8
+      - generic [ref=e37]:
+        - combobox "Active robot" [ref=e38]:
+          - option "0dd1cc2d" [selected]
+        - button "Refresh console data" [ref=e39] [cursor=pointer]: Refresh
+        - button "Toggle theme" [ref=e40] [cursor=pointer]: Light
+    - main [ref=e41]:
+      - region "Server log stream" [ref=e296]:
+        - generic [ref=e297]:
+          - generic [ref=e298]:
+            - paragraph [ref=e299]: Logs
+            - heading "Server log stream" [level=2] [ref=e300]
+            - paragraph [ref=e301]: Live logs help explain speech, intent, LLM, and robot execution state.
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - checkbox "Debug logs" [ref=e304]
+              - generic [ref=e305]: Debug logs
+            - generic [ref=e306]:
+              - checkbox "Auto-scroll" [checked] [ref=e307]
+              - generic [ref=e308]: Auto-scroll
+            - button "Copy logs" [ref=e309] [cursor=pointer]
+        - generic [ref=e311]: "2026.06.23 04:16:13: LLM response for 0dd1cc2d: Do you mean a specific color? Couldyou tell me the exact color you'd like for my eyes?"
+    - complementary "Context panel" [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - heading "Readiness" [level=2] [ref=e144]
+          - generic [ref=e145]: 5/5 ready
+        - list [ref=e146]:
+          - listitem [ref=e312]:
+            - generic [ref=e313]: Server API
+            - strong [ref=e314]: Responding
+          - listitem [ref=e315]:
+            - generic [ref=e316]: Initial setup
+            - strong [ref=e317]: Complete
+          - listitem [ref=e318]:
+            - generic [ref=e319]: Robot SDK
+            - strong [ref=e320]: 1 robot found
+          - listitem [ref=e321]:
+            - generic [ref=e322]: Speech
+            - strong [ref=e323]: whisper.cpp
+          - listitem [ref=e324]:
+            - generic [ref=e325]: Knowledge
+            - strong [ref=e326]: openrouter
+      - generic [ref=e148]:
+        - heading "Current robot" [level=2] [ref=e150]
+        - paragraph [ref=e151]: 0dd1cc2d at 192.168.2.8
+        - paragraph [ref=e152]: This state is inferred from the most recent server log line.

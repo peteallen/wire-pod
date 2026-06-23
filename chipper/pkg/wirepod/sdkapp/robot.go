@@ -29,6 +29,7 @@ type Robot struct {
 	EventStreamClient vectorpb.ExternalInterface_EventStreamClient
 	EventsStreaming   bool
 	StimState         float32
+	Activity          *ActivityMonitor
 	ConnTimer         int32
 	Ctx               context.Context
 }
@@ -98,6 +99,7 @@ func newRobot(serial string) (Robot, int, error) {
 	}
 	RobotObj.CamStreaming = false
 	RobotObj.EventsStreaming = false
+	RobotObj.Activity = newActivityMonitor()
 
 	// we have confirmed robot connection works, append to list of bots
 	robots = append(robots, RobotObj)
@@ -155,7 +157,7 @@ func connTimer(ind int) {
 			logger.Println("Closing SDK connection for " + robots[ind].ESN + ", source: connTimer")
 			removeRobot(robots[ind].ESN, "connTimer")
 			return
-		}  
+		}
 		robots[ind].ConnTimer = robots[ind].ConnTimer + 1
 	}
 }
@@ -170,6 +172,7 @@ func removeRobot(serial, source string) {
 			if source == "server" {
 				timerStopIndexes = append(timerStopIndexes, ind)
 			}
+			stopActivityStream(ind)
 			robots[ind].CamStreaming = false
 			robots[ind].EventsStreaming = false
 			robots[ind].BcAssumption = false

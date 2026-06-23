@@ -428,6 +428,13 @@ func SdkapiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprint(w, "error: must start event stream")
 		return
+	case r.URL.Path == "/api-sdk/get_activity":
+		_ = startActivityStream(robotObj, robotIndex)
+		writeActivitySnapshot(w, getActivitySnapshot(robotIndex))
+		return
+	case r.URL.Path == "/api-sdk/live_activity":
+		streamLiveActivity(w, r, robotObj, robotIndex)
+		return
 	case r.URL.Path == "/api-sdk/begin_cam_stream":
 		//robots[robotIndex].CamStreaming = true
 		fmt.Fprint(w, "done")
@@ -523,23 +530,23 @@ func SdkapiHandler(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/api-sdk/trigger_wake_word":
 		robotIP := strings.Split(robotObj.Target, ":")[0]
 		consoleURL := fmt.Sprintf("http://%s:8889/consolevarset?key=FakeButtonPressType&value=singlePressDetected", robotIP)
-		
+
 		client := &http.Client{
 			Timeout: 10 * time.Second,
 		}
-		
+
 		resp, err := client.Get(consoleURL)
 		if err != nil {
 			http.Error(w, "Failed to trigger wake word: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusOK {
 			http.Error(w, "Consolevars returned error", resp.StatusCode)
 			return
 		}
-		
+
 		fmt.Fprint(w, "success")
 		return
 	}

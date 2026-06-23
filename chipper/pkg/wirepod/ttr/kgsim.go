@@ -135,61 +135,225 @@ func removeEmojis(input string) string {
 }
 
 func CreateAIReq(transcribedText, esn string, gpt3tryagain, isKG bool) openai.ChatCompletionRequest {
-	defaultPrompt := "You are a helpful, animated robot called Vector. Keep the response concise yet informative."
+	return createAIReqWithToolMode(transcribedText, esn, gpt3tryagain, isKG, true)
+}
 
-	var nChat []openai.ChatCompletionMessage
-
-	smsg := openai.ChatCompletionMessage{
-		Role: openai.ChatMessageRoleSystem,
+func waitForBehaviorControl(start <-chan bool, timeout time.Duration, esn string) bool {
+	select {
+	case <-start:
+		return true
+	case <-time.After(timeout):
+		logger.Println("LLM behavior-control wait timed out for " + esn + "; continuing")
+		return false
 	}
-	if strings.TrimSpace(vars.APIConfig.Knowledge.OpenAIPrompt) != "" {
-		smsg.Content = strings.TrimSpace(vars.APIConfig.Knowledge.OpenAIPrompt)
-	} else {
-		smsg.Content = defaultPrompt
-	}
-
-	var model string
-
-	if gpt3tryagain {
-		model = openai.GPT3Dot5Turbo
-	} else if vars.APIConfig.Knowledge.Provider == "openai" {
-		model = openai.GPT4oMini
-		logger.Println("Using " + model)
-	} else {
-		logger.Println("Using " + vars.APIConfig.Knowledge.Model)
-		model = vars.APIConfig.Knowledge.Model
-	}
-
-	smsg.Content = CreatePrompt(smsg.Content, model, isKG)
-
-	nChat = append(nChat, smsg)
-	if vars.APIConfig.Knowledge.SaveChat {
-		rchat := GetChat(esn)
-		logger.Println("Using remembered chats, length of " + fmt.Sprint(len(rchat.Chats)) + " messages")
-		nChat = append(nChat, rchat.Chats...)
-	}
-	nChat = append(nChat, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: transcribedText,
-	})
-
-	aireq := openai.ChatCompletionRequest{
-		Model:            model,
-		MaxTokens:        2048,
-		Temperature:      1,
-		TopP:             1,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
-		Messages:         nChat,
-		Stream:           true,
-	}
-	return aireq
 }
 
 func StreamingKGSim(req interface{}, esn string, transcribedText string, isKG bool) (string, error) {
-	start := make(chan bool)
-	stop := make(chan bool)
-	stopStop := make(chan bool)
+	start := make(chan bool, 1)
+	stop := make(chan bool, 1)
+	stopStop := make(chan bool, 1)
+	kgReadyToAnswer := make(chan bool)
+	kgStopLooping := false
+	ctx := context.Background()
+	matched := false
+	var robot *vector.Vector
+	var guid string
+	var target string
+	for _, bot := range vars.BotInfo.Robots {
+		if esn == bot.Esn {
+			guid = bot.GUID
+			target = bot.IPAddress + ":443"
+			matched = true
+			break
+		}
+	}
+	if !matched {
+		return "", errors.New("robot " + esn + " was not found")
+	}
+	robot, err := vector.New(vector.WithSerialNo(esn), vector.WithToken(guid), vector.WithTarget(target))
+	if err != nil {
+		return err.Error(), err
+	}
+	_, err = robot.Conn.BatteryState(context.Background(), &vectorpb.BatteryStateRequest{})
+	if err != nil {
+		return "", err
+	}
+	logger.LogUI("LLM heard for " + esn + ": " + transcribedText)
+
+	if isKG {
+		BControl(robot, ctx, start, stop)
+		go func() {
+			for {
+				if kgStopLooping {
+					kgReadyToAnswer <- true
+					break
+				}
+				robot.Conn.PlayAnimation(ctx, &vectorpb.PlayAnimationRequest{
+					Animation: &vectorpb.Animation{
+						Name: "anim_knowledgegraph_searching_01",
+					},
+					Loops: 1,
+				})
+				time.Sleep(time.Second / 3)
+			}
+		}()
+	}
+
+	interrupted := false
+	readyStarted := false
+	var stopTTSLoop bool
+	ttsLoopStarted := false
+	TTSLoopStopped := make(chan bool)
+
+	TTSLoopAnimation := "anim_tts_loop_02"
+	TTSGetinAnimation := "anim_getin_tts_01"
+	if isKG {
+		TTSLoopAnimation = "anim_knowledgegraph_answer_01"
+		TTSGetinAnimation = "anim_knowledgegraph_searching_getout_01"
+	}
+
+	ensureReady := func() {
+		if readyStarted {
+			return
+		}
+		readyStarted = true
+		if !isKG {
+			IntentPassSilently(req, "intent_greeting_hello", transcribedText, map[string]string{}, false)
+			logger.Println("LLM speech behavior-control handshake sent for " + esn)
+			time.Sleep(time.Millisecond * 200)
+			BControl(robot, ctx, start, stop)
+		}
+		if isKG {
+			kgStopLooping = true
+			for range kgReadyToAnswer {
+				break
+			}
+		} else {
+			time.Sleep(time.Millisecond * 300)
+		}
+		waitForBehaviorControl(start, 2*time.Second, esn)
+		robot.Conn.PlayAnimation(
+			ctx,
+			&vectorpb.PlayAnimationRequest{
+				Animation: &vectorpb.Animation{
+					Name: TTSGetinAnimation,
+				},
+				Loops: 1,
+			},
+		)
+		if !vars.APIConfig.Knowledge.CommandsEnable {
+			ttsLoopStarted = true
+			go func() {
+				for {
+					if stopTTSLoop {
+						TTSLoopStopped <- true
+						break
+					}
+					robot.Conn.PlayAnimation(
+						ctx,
+						&vectorpb.PlayAnimationRequest{
+							Animation: &vectorpb.Animation{
+								Name: TTSLoopAnimation,
+							},
+							Loops: 1,
+						},
+					)
+				}
+			}()
+		}
+		go func() {
+			interrupted = InterruptKGSimWhenTouchedOrWaked(robot, stop, stopStop)
+		}()
+	}
+
+	client := newKnowledgeClient()
+	aireq := CreateAIReq(transcribedText, esn, false, isKG)
+	var emitFirmwareIntent func(string, string) error
+	if !isKG {
+		emitFirmwareIntent = func(intentName, toolName string) error {
+			logger.Println("LLM selected Vector firmware intent " + intentName + " via " + toolName + " for " + esn)
+			logger.LogUI("LLM action for " + esn + ": " + intentName)
+			_, err := IntentPassSilently(req, intentName, transcribedText, map[string]string{}, false)
+			return err
+		}
+	}
+	runtimeResult, err := runLLMRuntime(ctx, client, aireq, robot, stopStop, ensureReady, func() bool {
+		return interrupted
+	}, emitFirmwareIntent)
+	if err != nil && !runtimeResult.ReadyStarted && strings.Contains(err.Error(), "does not exist") && vars.APIConfig.Knowledge.Provider == "openai" {
+		logger.Println("GPT-4 model cannot be accessed with this API key. You likely need to add more than $5 dollars of funds to your OpenAI account.")
+		logger.LogUI("GPT-4 model cannot be accessed with this API key. You likely need to add more than $5 dollars of funds to your OpenAI account.")
+		aireq = CreateAIReq(transcribedText, esn, true, isKG)
+		logger.Println("Falling back to " + aireq.Model)
+		logger.LogUI("Falling back to " + aireq.Model)
+		runtimeResult, err = runLLMRuntime(ctx, client, aireq, robot, stopStop, ensureReady, func() bool {
+			return interrupted
+		}, emitFirmwareIntent)
+	}
+	if err != nil && !runtimeResult.ReadyStarted && len(aireq.Tools) > 0 && shouldRetryLLMWithoutTools(err) {
+		logger.Println("LLM provider rejected tool request; retrying with legacy command fallback")
+		legacyReq := createAIReqWithToolMode(transcribedText, esn, false, isKG, false)
+		runtimeResult, err = runLLMRuntime(ctx, client, legacyReq, robot, stopStop, ensureReady, func() bool {
+			return interrupted
+		}, emitFirmwareIntent)
+	}
+	if err != nil {
+		if isKG {
+			kgStopLooping = true
+			for range kgReadyToAnswer {
+				break
+			}
+			if readyStarted {
+				stop <- true
+			} else {
+				go func() {
+					for range start {
+						stop <- true
+						break
+					}
+				}()
+			}
+			time.Sleep(time.Second / 3)
+			KGSim(esn, "There was an error getting data from the L. L. M.")
+		}
+		return "", err
+	}
+
+	if vars.APIConfig.Knowledge.SaveChat && strings.TrimSpace(runtimeResult.FinalText) != "" {
+		Remember(openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: transcribedText,
+		},
+			openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: strings.TrimSpace(runtimeResult.FinalText),
+			},
+			esn)
+	}
+	if strings.TrimSpace(runtimeResult.FinalText) != "" {
+		logger.LogUI("LLM response for " + esn + ": " + strings.TrimSpace(runtimeResult.FinalText))
+	}
+	for _, action := range runtimeResult.ToolActions {
+		logger.LogUI("LLM action for " + esn + ": " + action)
+	}
+	if ttsLoopStarted {
+		stopTTSLoop = true
+		for range TTSLoopStopped {
+			break
+		}
+	}
+	time.Sleep(time.Millisecond * 100)
+	if readyStarted && !interrupted {
+		stopStop <- true
+		stop <- true
+	}
+	return "", nil
+}
+
+func streamingKGSimLegacy(req interface{}, esn string, transcribedText string, isKG bool) (string, error) {
+	start := make(chan bool, 1)
+	stop := make(chan bool, 1)
+	stopStop := make(chan bool, 1)
 	kgReadyToAnswer := make(chan bool)
 	kgStopLooping := false
 	ctx := context.Background()
@@ -377,7 +541,8 @@ func StreamingKGSim(req interface{}, esn string, transcribedText string, isKG bo
 	for is := range successIntent {
 		if is {
 			if !isKG {
-				IntentPass(req, "intent_greeting_hello", transcribedText, map[string]string{}, false)
+				IntentPassSilently(req, "intent_greeting_hello", transcribedText, map[string]string{}, false)
+				logger.Println("LLM speech behavior-control handshake sent for " + esn)
 			}
 			break
 		} else {
@@ -404,93 +569,92 @@ func StreamingKGSim(req interface{}, esn string, transcribedText string, isKG bo
 
 	var stopTTSLoop bool
 	TTSLoopStopped := make(chan bool)
-	for range start {
-		if isKG {
-			kgStopLooping = true
-			for range kgReadyToAnswer {
-				break
-			}
-		} else {
-			time.Sleep(time.Millisecond * 300)
+	waitForBehaviorControl(start, 2*time.Second, esn)
+	if isKG {
+		kgStopLooping = true
+		for range kgReadyToAnswer {
+			break
 		}
-		robot.Conn.PlayAnimation(
-			ctx,
-			&vectorpb.PlayAnimationRequest{
-				Animation: &vectorpb.Animation{
-					Name: TTSGetinAnimation,
-				},
-				Loops: 1,
+	} else {
+		time.Sleep(time.Millisecond * 300)
+	}
+	robot.Conn.PlayAnimation(
+		ctx,
+		&vectorpb.PlayAnimationRequest{
+			Animation: &vectorpb.Animation{
+				Name: TTSGetinAnimation,
 			},
-		)
-		if !vars.APIConfig.Knowledge.CommandsEnable {
-			go func() {
-				for {
-					if stopTTSLoop {
-						TTSLoopStopped <- true
-						break
-					}
-					robot.Conn.PlayAnimation(
-						ctx,
-						&vectorpb.PlayAnimationRequest{
-							Animation: &vectorpb.Animation{
-								Name: TTSLoopAnimation,
-							},
-							Loops: 1,
-						},
-					)
-				}
-			}()
-		}
-		var disconnect bool
-		numInResp := 0
-		for {
-			respSlice := fullRespSlice
-			if len(respSlice)-1 < numInResp {
-				if !isDone {
-					logger.Println("Waiting for more content from LLM...")
-					for range speakReady {
-						respSlice = fullRespSlice
-						break
-					}
-				} else {
+			Loops: 1,
+		},
+	)
+	if !vars.APIConfig.Knowledge.CommandsEnable {
+		go func() {
+			for {
+				if stopTTSLoop {
+					TTSLoopStopped <- true
 					break
 				}
+				robot.Conn.PlayAnimation(
+					ctx,
+					&vectorpb.PlayAnimationRequest{
+						Animation: &vectorpb.Animation{
+							Name: TTSLoopAnimation,
+						},
+						Loops: 1,
+					},
+				)
 			}
-			if interrupted {
+		}()
+	}
+	var disconnect bool
+	numInResp := 0
+	for {
+		respSlice := fullRespSlice
+		if len(respSlice)-1 < numInResp {
+			if !isDone {
+				logger.Println("Waiting for more content from LLM...")
+				for range speakReady {
+					respSlice = fullRespSlice
+					break
+				}
+			} else {
 				break
 			}
-			logger.Println(respSlice[numInResp])
-			acts := GetActionsFromString(respSlice[numInResp])
-			nChat[len(nChat)-1].Content = fullRespText
-			disconnect = PerformActions(nChat, acts, robot, stopStop)
-			if disconnect {
-				break
-			}
-			numInResp = numInResp + 1
 		}
-		if !vars.APIConfig.Knowledge.CommandsEnable {
-			stopTTSLoop = true
-			for range TTSLoopStopped {
-				break
-			}
+		if interrupted {
+			break
 		}
-		time.Sleep(time.Millisecond * 100)
-		// if isKG {
-		// 	robot.Conn.PlayAnimation(
-		// 		ctx,
-		// 		&vectorpb.PlayAnimationRequest{
-		// 			Animation: &vectorpb.Animation{
-		// 				Name: "anim_knowledgegraph_success_01",
-		// 			},
-		// 			Loops: 1,
-		// 		},
-		// 	)
-		// 	time.Sleep(time.Millisecond * 3300)
-		// }
-		if !interrupted {
-			stopStop <- true
-			stop <- true
+		logger.Println(respSlice[numInResp])
+		acts := GetActionsFromString(respSlice[numInResp])
+		nChat[len(nChat)-1].Content = fullRespText
+		disconnect = PerformActions(nChat, acts, robot, stopStop)
+		if disconnect {
+			break
 		}
+		numInResp = numInResp + 1
+	}
+	if !vars.APIConfig.Knowledge.CommandsEnable {
+		stopTTSLoop = true
+		for range TTSLoopStopped {
+			break
+		}
+	}
+	time.Sleep(time.Millisecond * 100)
+	// if isKG {
+	// 	robot.Conn.PlayAnimation(
+	// 		ctx,
+	// 		&vectorpb.PlayAnimationRequest{
+	// 			Animation: &vectorpb.Animation{
+	// 				Name: "anim_knowledgegraph_success_01",
+	// 			},
+	// 			Loops: 1,
+	// 		},
+	// 	)
+	// 	time.Sleep(time.Millisecond * 3300)
+	// }
+	if !interrupted {
+		stopStop <- true
+		stop <- true
 	}
 	return "", nil
 }

@@ -20,6 +20,14 @@ type systemIntentResponseStruct struct {
 }
 
 func IntentPass(req interface{}, intentThing string, speechText string, intentParams map[string]string, isParam bool) (interface{}, error) {
+	return intentPass(req, intentThing, speechText, intentParams, isParam, true)
+}
+
+func IntentPassSilently(req interface{}, intentThing string, speechText string, intentParams map[string]string, isParam bool) (interface{}, error) {
+	return intentPass(req, intentThing, speechText, intentParams, isParam, false)
+}
+
+func intentPass(req interface{}, intentThing string, speechText string, intentParams map[string]string, isParam bool, logUI bool) (interface{}, error) {
 	var esn string
 	var req1 *vtt.IntentRequest
 	var req2 *vtt.IntentGraphRequest
@@ -52,8 +60,10 @@ func IntentPass(req interface{}, intentThing string, speechText string, intentPa
 			Action:    intentThing,
 		}
 	}
-	logger.LogUI("Intent matched: " + intentThing + ", transcribed text: '" + speechText + "', device: " + esn)
-	if isParam {
+	if logUI {
+		logger.LogUI("Intent matched: " + intentThing + ", transcribed text: '" + speechText + "', device: " + esn)
+	}
+	if isParam && logUI {
 		logger.LogUI("Parameters sent: " + fmt.Sprint(intentParams))
 	}
 	intent := pb.IntentResponse{
@@ -258,6 +268,10 @@ func ProcessTextAll(req interface{}, voiceText string, intents []vars.JsonIntent
 	var intentNum int = 0
 	var successMatched bool = false
 	voiceText = strings.ToLower(voiceText)
+	if ShouldBypassLocalIntentMatcher() {
+		logger.Println("LLM Knowledge Graph is enabled; bypassing local intent matcher for " + botSerial)
+		return false
+	}
 	pluginMatched := pluginFunctionHandler(req, voiceText, botSerial)
 	customIntentMatched := customIntentHandler(req, voiceText, botSerial)
 	if !customIntentMatched && !pluginMatched {
@@ -329,7 +343,7 @@ func KnowledgeGraphResponseIG(req *vtt.IntentGraphRequest, spokenText string, qu
 		QueryText:    queryText,
 		CommandType:  pb.RobotMode_VOICE_COMMAND.String(),
 	}
-	
+
 	if err := req.Stream.Send(&intentGraphSend); err != nil {
 		return err
 	}

@@ -1,0 +1,164 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - complementary "Primary navigation" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: W
+        - generic [ref=e7]:
+          - paragraph [ref=e8]: Local console
+          - heading "Wire-Pod" [level=1] [ref=e9]
+      - navigation "Console sections" [ref=e10]:
+        - button "Overview" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Overview
+        - button "Robot" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: R
+          - generic [ref=e16]: Robot
+        - button "Setup" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: C
+          - generic [ref=e19]: Setup
+        - button "Intents" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: I
+          - generic [ref=e22]: Intents
+        - button "Logs" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: L
+          - generic [ref=e25]: Logs
+        - button "Updates" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: U
+          - generic [ref=e28]: Updates
+        - button "Appearance" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: A
+          - generic [ref=e31]: Appearance
+      - generic [ref=e34]:
+        - strong [ref=e35]: Checking server
+        - generic [ref=e36]: Version unavailable
+    - banner [ref=e37]:
+      - generic [ref=e38]:
+        - strong [ref=e40]: Checking robot
+        - generic [ref=e41]: No robot selected
+      - generic [ref=e42]:
+        - generic [ref=e43]: http://localhost:8080
+        - generic [ref=e44]: State unknown
+      - generic [ref=e45]:
+        - combobox "Active robot" [ref=e46]
+        - button "Refresh console data" [ref=e47] [cursor=pointer]: Refresh
+        - button "Toggle theme" [ref=e48] [cursor=pointer]: Dark
+    - main [ref=e49]:
+      - region "Wire-Pod" [ref=e50]:
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - paragraph [ref=e53]: Operator console
+            - heading "Wire-Pod" [level=2] [ref=e54]
+            - paragraph [ref=e55]: Live server, robot, speech, intent, and LLM state in one place.
+          - generic [ref=e56]:
+            - link "Legacy setup" [ref=e57] [cursor=pointer]:
+              - /url: legacy.html
+            - link "Advanced robot page" [ref=e58] [cursor=pointer]:
+              - /url: /sdkapp
+        - generic [ref=e59]:
+          - region "Waiting for data" [ref=e60]:
+            - generic [ref=e61]:
+              - generic [ref=e62]:
+                - paragraph [ref=e63]: Vector state
+                - heading "Waiting for data" [level=3] [ref=e64]
+              - generic [ref=e65]: Unverified
+            - generic [ref=e66]:
+              - img "Vector face state" [ref=e68]
+              - generic [ref=e69]:
+                - paragraph [ref=e70]: Checking robot and server state...
+                - generic "Processing pipeline" [ref=e71]:
+                  - generic [ref=e72]:
+                    - generic [ref=e73]: Listen
+                    - strong [ref=e74]: Unknown
+                  - generic [ref=e75]:
+                    - generic [ref=e76]: STT
+                    - strong [ref=e77]: Unknown
+                  - generic [ref=e78]:
+                    - generic [ref=e79]: Intent
+                    - strong [ref=e80]: Unknown
+                  - generic [ref=e81]:
+                    - generic [ref=e82]: LLM
+                    - strong [ref=e83]: Unknown
+                  - generic [ref=e84]:
+                    - generic [ref=e85]: Robot
+                    - strong [ref=e86]: Unknown
+          - region "Robot Status" [ref=e87]:
+            - generic [ref=e88]:
+              - heading "Robot Status" [level=3] [ref=e89]
+              - generic [ref=e90]: Unknown
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - term [ref=e93]: Serial
+                - definition [ref=e94]: Not connected
+              - generic [ref=e95]:
+                - term [ref=e96]: IP address
+                - definition [ref=e97]: Unavailable
+              - generic [ref=e98]:
+                - term [ref=e99]: Battery
+                - definition [ref=e100]:
+                  - progressbar [ref=e101]
+                  - text: Unknown
+              - generic [ref=e102]:
+                - term [ref=e103]: Dock
+                - definition [ref=e104]: Unknown
+          - region "Server Health" [ref=e105]:
+            - generic [ref=e106]:
+              - heading "Server Health" [level=3] [ref=e107]
+              - generic [ref=e108]: Checking
+            - list [ref=e109]:
+              - listitem [ref=e110]:
+                - generic [ref=e111]: API
+                - strong [ref=e112]: Checking
+              - listitem [ref=e113]:
+                - generic [ref=e114]: Initial setup
+                - strong [ref=e115]: Unknown
+              - listitem [ref=e116]:
+                - generic [ref=e117]: Speech
+                - strong [ref=e118]: Unknown
+              - listitem [ref=e119]:
+                - generic [ref=e120]: Knowledge
+                - strong [ref=e121]: Unknown
+              - listitem [ref=e122]:
+                - generic [ref=e123]: Weather
+                - strong [ref=e124]: Unknown
+          - region "Recent Activity" [ref=e125]:
+            - generic [ref=e126]:
+              - heading "Recent Activity" [level=3] [ref=e127]
+              - button "View logs" [ref=e128] [cursor=pointer]
+            - generic [ref=e129]:
+              - generic [ref=e130]:
+                - time [ref=e131]: 10:15 PM
+                - strong [ref=e132]: LLM
+                - generic [ref=e133]: "2026.06.23 04:15:06: LLM response for 0dd1cc2d: All set-my eyes are now bright green!"
+              - generic [ref=e134]:
+                - time [ref=e135]: 10:15 PM
+                - strong [ref=e136]: LLM
+                - generic [ref=e137]: "2026.06.23 04:14:40: LLM response for 0dd1cc2d: I'm not sure I have an ice‑cream maker, but I can celebrate the thought with a happy little animation!"
+          - region "Safe Quick Actions" [ref=e138]:
+            - generic [ref=e139]:
+              - heading "Safe Quick Actions" [level=3] [ref=e140]
+              - generic [ref=e141]: No robot
+            - generic [ref=e142]:
+              - button "Wake word" [ref=e143] [cursor=pointer]
+              - button "Dock robot" [ref=e144] [cursor=pointer]
+              - button "Sleep" [ref=e145] [cursor=pointer]
+              - button "Play animation" [ref=e146] [cursor=pointer]
+            - generic [ref=e147]:
+              - generic [ref=e148]: Say text
+              - generic [ref=e149]:
+                - textbox "Say text" [ref=e150]:
+                  - /placeholder: Type a short phrase
+                - button "Send" [ref=e151] [cursor=pointer]
+            - button "Release behavior control" [ref=e152] [cursor=pointer]
+    - complementary "Context panel" [ref=e153]:
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - heading "Readiness" [level=2] [ref=e156]
+          - generic [ref=e157]: Checking
+        - list [ref=e158]:
+          - listitem [ref=e159]: Loading readiness checks...
+      - generic [ref=e160]:
+        - heading "Current robot" [level=2] [ref=e162]
+        - paragraph [ref=e163]: No robot selected yet.
+        - paragraph [ref=e164]: Live state will update as Wire-Pod reports logs, SDK status, and battery information.

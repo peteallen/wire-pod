@@ -68,3 +68,51 @@ func TestOpenRouterTransportAddsHeadersAndReasoningExclusion(t *testing.T) {
 	}
 	resp.Body.Close()
 }
+
+func TestOpenRouterTransportPreservesExistingReasoning(t *testing.T) {
+	transport := openRouterTransport{
+		base: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			bodyBytes, err := io.ReadAll(req.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var body map[string]any
+			if err := json.Unmarshal(bodyBytes, &body); err != nil {
+				t.Fatal(err)
+			}
+
+			reasoning, ok := body["reasoning"].(map[string]any)
+			if !ok {
+				t.Fatalf("reasoning was not preserved: %#v", body["reasoning"])
+			}
+			if got := reasoning["effort"]; got != "high" {
+				t.Fatalf("reasoning.effort = %#v", got)
+			}
+			if got := reasoning["exclude"]; got != false {
+				t.Fatalf("reasoning.exclude = %#v", got)
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("{}")),
+				Header:     make(http.Header),
+			}, nil
+		}),
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		"https://openrouter.ai/api/v1/chat/completions",
+		strings.NewReader(`{"model":"google/gemini-3.5-flash","reasoning":{"effort":"high","exclude":false}}`),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp, err := transport.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+}
