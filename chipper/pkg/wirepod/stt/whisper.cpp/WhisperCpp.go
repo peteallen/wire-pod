@@ -40,7 +40,10 @@ func padPCM(data []byte) []byte {
 }
 
 func Init() error {
-	whispModel := os.Getenv("WHISPER_MODEL")
+	whispModel := strings.TrimSpace(vars.APIConfig.STT.Model)
+	if whispModel == "" {
+		whispModel = os.Getenv("WHISPER_MODEL")
+	}
 	if whispModel == "" {
 		logger.Println("WHISPER_MODEL not defined, assuming tiny")
 		whispModel = "tiny"
@@ -60,6 +63,9 @@ func Init() error {
 		return err
 	}
 	logger.Println("Opening Whisper model (" + modelPath + ")")
+	if context != nil {
+		context.Whisper_free()
+	}
 	//logger.Println(whisper.Whisper_print_system_info())
 	context = whisper.Whisper_init(modelPath)
 	params = context.Whisper_full_default_params(whisper.SamplingStrategy(whisper.SAMPLING_GREEDY))

@@ -4,6 +4,8 @@ function checkLanguage() {
     .then((parsed) => {
       const sectionLanguage = document.getElementById("section-language");
       const languageSelection = document.getElementById("languageSelection");
+      const providerSelection = document.getElementById("sttProviderSelection");
+      const whisperModelSelection = document.getElementById("whisperModelSelection");
 
       if (parsed.provider !== "vosk" && parsed.provider !== "whisper.cpp") {
         console.log("stt not vosk/whisper");
@@ -12,9 +14,17 @@ function checkLanguage() {
       } else {
         sectionLanguage.style.display = "block";
         console.log(parsed.language);
-        languageSelection.value = "en-US";
+        providerSelection.value = parsed.provider;
+        languageSelection.value = parsed.language || "en-US";
+        whisperModelSelection.value = parsed.model || "tiny";
+        checkSTTProvider();
       }
     });
+}
+
+function checkSTTProvider() {
+  const provider = document.getElementById("sttProviderSelection").value;
+  document.getElementById("whisperModelSelectionSpan").style.display = provider === "whisper.cpp" ? "inline" : "none";
 }
 
 function updateSetupStatus(statusString) {
@@ -26,8 +36,10 @@ function sendSetupInfo() {
   document.getElementById("config-options").style.display = "none";
   updateSetupStatus("Initiating setup...");
 
+  const provider = document.getElementById("sttProviderSelection").value;
   const language = document.getElementById("languageSelection").value;
-  const langData = { language };
+  const model = document.getElementById("whisperModelSelection").value;
+  const langData = { provider, language, model };
 
   document.getElementById("languageSelectionDiv").style.display = "none";
 

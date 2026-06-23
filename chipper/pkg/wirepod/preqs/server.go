@@ -30,11 +30,19 @@ var stiHandler func(sr.SpeechRequest) (string, map[string]string, error)
 
 var isSti bool = false
 
-func ReloadVosk() {
+func ReloadSTT() error {
 	if vars.APIConfig.STT.Service == "vosk" || vars.APIConfig.STT.Service == "whisper.cpp" {
-		vars.SttInitFunc()
+		if err := vars.SttInitFunc(); err != nil {
+			return err
+		}
 		vars.IntentList, _ = vars.LoadIntents()
+		VoiceProcessor = vars.APIConfig.STT.Service
 	}
+	return nil
+}
+
+func ReloadVosk() {
+	ReloadSTT()
 }
 
 // New returns a new server

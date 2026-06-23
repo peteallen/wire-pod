@@ -219,37 +219,85 @@ func handleGetKGAPI(w http.ResponseWriter) {
 
 func handleSetSTTInfo(w http.ResponseWriter, r *http.Request) {
 	var request struct {
+		Provider string `json:"provider"`
 		Language string `json:"language"`
+		Model    string `json:"model"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
-	if vars.APIConfig.STT.Service == "vosk" {
-		if !isValidLanguage(request.Language, localization.ValidVoskModels) {
+	provider := strings.TrimSpace(request.Provider)
+	if provider == "" {
+		provider = vars.APIConfig.STT.Service
+	}
+	if provider == "" {
+		provider = "vosk"
+	}
+	language := strings.TrimSpace(request.Language)
+	if language == "" {
+		language = "en-US"
+	}
+	model := strings.TrimSpace(request.Model)
+	if model == "" {
+		model = vars.APIConfig.STT.Model
+	}
+	if model == "" {
+		model = "tiny"
+	}
+	if provider == "whisper" {
+		provider = "whisper.cpp"
+	}
+
+	if provider == "vosk" {
+		if !isValidLanguage(language, localization.ValidVoskModels) {
 			http.Error(w, "language not valid", http.StatusBadRequest)
 			return
 		}
-		if !isDownloadedLanguage(request.Language, vars.DownloadedVoskModels) {
-			go localization.DownloadVoskModel(request.Language)
+		if !isDownloadedLanguage(language, vars.DownloadedVoskModels) {
+			vars.APIConfig.STT.Service = provider
+			vars.APIConfig.STT.Language = language
+			vars.APIConfig.STT.Model = model
+			vars.APIConfig.PastInitialSetup = true
+			vars.WriteConfigToDisk()
+			go localization.DownloadVoskModel(language)
 			fmt.Fprint(w, "downloading language model...")
 			return
 		}
-	} else if vars.APIConfig.STT.Service == "whisper.cpp" {
-		if !isValidLanguage(request.Language, localization.ValidVoskModels) {
+	} else if provider == "whisper.cpp" {
+		if !isValidLanguage(language, localization.ValidVoskModels) {
 			http.Error(w, "language not valid", http.StatusBadRequest)
+			return
+		}
+		if !isValidLanguage(model, localization.ValidWhisperModels) {
+			http.Error(w, "whisper model not valid", http.StatusBadRequest)
+			return
+		}
+		if !isDownloadedWhisperModel(model) {
+			vars.APIConfig.STT.Service = provider
+			vars.APIConfig.STT.Language = language
+			vars.APIConfig.STT.Model = model
+			vars.APIConfig.PastInitialSetup = true
+			vars.WriteConfigToDisk()
+			go localization.DownloadWhisperModel(model, language)
+			fmt.Fprint(w, "downloading whisper model...")
 			return
 		}
 	} else {
 		http.Error(w, "service must be vosk or whisper", http.StatusBadRequest)
 		return
 	}
-	vars.APIConfig.STT.Language = request.Language
+	vars.APIConfig.STT.Service = provider
+	vars.APIConfig.STT.Language = language
+	vars.APIConfig.STT.Model = model
 	vars.APIConfig.PastInitialSetup = true
 	vars.WriteConfigToDisk()
-	processreqs.ReloadVosk()
+	if err := processreqs.ReloadSTT(); err != nil {
+		http.Error(w, "error reloading STT: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	logger.Println("Reloaded voice processor successfully")
-	fmt.Fprint(w, "Language switched successfully.")
+	fmt.Fprint(w, "STT settings switched successfully.")
 }
 
 func handleGetDownloadStatus(w http.ResponseWriter) {
@@ -514,4 +562,9 @@ func isDownloadedLanguage(language string, downloadedLanguages []string) bool {
 		}
 	}
 	return false
+}
+
+func isDownloadedWhisperModel(model string) bool {
+	_, err := os.Stat(filepath.Join(vars.WhisperModelPath, "ggml-"+model+".bin"))
+	return err == nil
 }

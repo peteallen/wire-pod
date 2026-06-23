@@ -126,6 +126,10 @@ apply_env_overrides() {
         update_export "STT_LANGUAGE" "${WIREPOD_STT_LANGUAGE}" "${source_file}"
     fi
 
+    if [ -n "${WIREPOD_WHISPER_MODEL:-}" ]; then
+        update_export "WHISPER_MODEL" "${WIREPOD_WHISPER_MODEL}" "${source_file}"
+    fi
+
     if [ -n "${WIREPOD_USE_INBUILT_BLE:-}" ]; then
         update_export "USE_INBUILT_BLE" "${WIREPOD_USE_INBUILT_BLE}" "${source_file}"
     fi
@@ -138,6 +142,17 @@ apply_env_overrides() {
 
 persist_directories
 persist_files
+
+mkdir -p "${DATA_ROOT}/whisper.cpp/models"
+if [ -d /opt/default-whisper-models ]; then
+    for model_path in /opt/default-whisper-models/*.bin; do
+        [ -e "${model_path}" ] || continue
+        model_name="$(basename "${model_path}")"
+        if [ ! -e "${DATA_ROOT}/whisper.cpp/models/${model_name}" ]; then
+            cp -a "${model_path}" "${DATA_ROOT}/whisper.cpp/models/${model_name}"
+        fi
+    done
+fi
 
 if [ ! -e /root/.vosk ]; then
     ln -sfn /opt/vosk /root/.vosk

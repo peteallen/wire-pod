@@ -411,7 +411,11 @@ function updateKGAPI() {
 }
 
 function setSTTLanguage() {
-  const data = { language: getE("languageSelection").value };
+  const data = {
+    provider: getE("sttProviderSelection").value,
+    language: getE("languageSelection").value,
+    model: getE("whisperModelSelection").value,
+  };
 
   displayMessage("languageStatus", "Setting...");
 
@@ -432,6 +436,11 @@ function setSTTLanguage() {
         getE("languageSelectionDiv").style.display = response.includes("success") ? "block" : "none";
       }
     });
+}
+
+function checkSTTProvider() {
+  const provider = getE("sttProviderSelection").value;
+  getE("whisperModelSelectionSpan").style.display = provider === "whisper.cpp" ? "inline" : "none";
 }
 
 function updateSTTLanguageDownload() {
@@ -598,11 +607,14 @@ function showLanguage() {
     .then((response) => response.json())
     .then((parsed) => {
       if (parsed.provider !== "vosk" && parsed.provider !== "whisper.cpp") {
-        displayError("languageStatus", `To set the STT language, the provider must be Vosk or Whisper. The current one is '${parsed.sttProvider}'.`);
+        displayError("languageStatus", `To set the STT language, the provider must be Vosk or Whisper. The current one is '${parsed.provider}'.`);
         getE("languageSelectionDiv").style.display = "none";
       } else {
         getE("languageSelectionDiv").style.display = "block";
+        getE("sttProviderSelection").value = parsed.provider;
         getE("languageSelection").value = parsed.language;
+        getE("whisperModelSelection").value = parsed.model || "tiny";
+        checkSTTProvider();
       }
     });
 }

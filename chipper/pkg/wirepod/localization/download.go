@@ -27,6 +27,8 @@ import (
 
 var URLPrefix string = "https://github.com/kercre123/vosk-models/raw/main/"
 
+var WhisperURLPrefix string = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/"
+
 //var URLPrefix string = "https://alphacephei.com/vosk/models/"
 
 var DownloadStatus string = "not downloading"
@@ -80,12 +82,50 @@ func DownloadVoskModel(language string) {
 	os.Remove(filep)
 	vars.DownloadedVoskModels = append(vars.DownloadedVoskModels, language)
 	DownloadStatus = "Reloading voice processor"
+	vars.APIConfig.STT.Service = "vosk"
 	vars.APIConfig.STT.Language = language
 	vars.APIConfig.PastInitialSetup = true
 	vars.WriteConfigToDisk()
-	ReloadVosk()
+	ReloadSTT()
 	logger.Println("Reloaded voice processor successfully")
 	DownloadStatus = "success"
+}
+
+func DownloadWhisperModel(model string, language string) {
+	model = strings.TrimSpace(model)
+	if model == "" {
+		model = "tiny"
+	}
+	if !isValid(model, ValidWhisperModels) {
+		DownloadStatus = "error: Whisper model not valid"
+		logger.Println("Whisper model not valid: " + model)
+		return
+	}
+	os.MkdirAll(vars.WhisperModelPath, 0755)
+	filename := "ggml-" + model + ".bin"
+	destPath := filepath.Join(vars.WhisperModelPath, filename)
+	DownloadFile(WhisperURLPrefix+filename, destPath)
+	if strings.Contains(DownloadStatus, "error") {
+		return
+	}
+	DownloadStatus = "Reloading voice processor"
+	vars.APIConfig.STT.Service = "whisper.cpp"
+	vars.APIConfig.STT.Language = language
+	vars.APIConfig.STT.Model = model
+	vars.APIConfig.PastInitialSetup = true
+	vars.WriteConfigToDisk()
+	ReloadSTT()
+	logger.Println("Reloaded voice processor successfully")
+	DownloadStatus = "success"
+}
+
+func isValid(value string, validValues []string) bool {
+	for _, valid := range validValues {
+		if value == valid {
+			return true
+		}
+	}
+	return false
 }
 
 func PrintDownloadPercent(done chan int64, path string, total int64) {

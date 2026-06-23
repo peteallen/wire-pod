@@ -49,10 +49,27 @@
         </div>
 
         <div id="section-language" style="display: none">
-          <h3>Speech-to-Text Language</h3>
+          <h3>Speech-to-Text</h3>
           <hr class="small-hr">
           <div class="center" id="languageStatus"></div>
           <div id="languageSelectionDiv">
+            <label for="sttProviderSelection">STT Provider:</label>
+            <select onchange="checkSTTProvider()" name="sttProviderSelection" id="sttProviderSelection">
+              <option value="vosk">Vosk</option>
+              <option value="whisper.cpp">Whisper.cpp</option>
+            </select><br />
+            <span id="whisperModelSelectionSpan" style="display: none">
+              <label for="whisperModelSelection">Whisper Model:</label>
+              <select name="whisperModelSelection" id="whisperModelSelection">
+                <option value="tiny">Tiny</option>
+                <option value="base">Base</option>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large-v3">Large v3</option>
+                <option value="large-v3-q5_0">Large v3 q5_0</option>
+              </select><br />
+            </span>
+            <label for="languageSelection">STT Language:</label>
             <select name="languageSelection" id="languageSelection">
               <option value="en-US">English (US)</option>
               <option value="it-IT">Italian (IT)</option>

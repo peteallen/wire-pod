@@ -40,6 +40,7 @@ type apiConfig struct {
 	STT struct {
 		Service  string `json:"provider"`
 		Language string `json:"language"`
+		Model    string `json:"model"`
 	} `json:"STT"`
 	Server struct {
 		// false for ip, true for escape pod
@@ -89,6 +90,21 @@ func WriteSTT() {
 	if os.Getenv("STT_SERVICE") == "vosk" || os.Getenv("STT_SERVICE") == "whisper.cpp" {
 		APIConfig.STT.Language = os.Getenv("STT_LANGUAGE")
 	}
+	if os.Getenv("WHISPER_MODEL") != "" {
+		APIConfig.STT.Model = os.Getenv("WHISPER_MODEL")
+	}
+	if APIConfig.STT.Service == "whisper.cpp" && APIConfig.STT.Model == "" {
+		APIConfig.STT.Model = "tiny"
+	}
+}
+
+func shouldReadSTTFromEnv() bool {
+	if APIConfig.STT.Service == "" {
+		return true
+	}
+	return os.Getenv("WIREPOD_STT_SERVICE") != "" ||
+		os.Getenv("WIREPOD_STT_LANGUAGE") != "" ||
+		os.Getenv("WIREPOD_WHISPER_MODEL") != ""
 }
 
 func ReadConfig() {
@@ -113,9 +129,14 @@ func ReadConfig() {
 			logger.Println(err)
 			return
 		}
-		// stt service is the only thing controlled by shell
-		if APIConfig.STT.Service != os.Getenv("STT_SERVICE") {
+		if shouldReadSTTFromEnv() {
 			WriteSTT()
+		}
+		if APIConfig.STT.Language == "" && (APIConfig.STT.Service == "vosk" || APIConfig.STT.Service == "whisper.cpp") {
+			APIConfig.STT.Language = "en-US"
+		}
+		if APIConfig.STT.Service == "whisper.cpp" && APIConfig.STT.Model == "" {
+			APIConfig.STT.Model = "tiny"
 		}
 		if !APIConfig.HasReadFromEnv {
 			if APIConfig.Server.Port != os.Getenv("DDL_RPC_PORT") {

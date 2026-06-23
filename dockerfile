@@ -6,6 +6,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 ARG VOSK_VERSION=0.3.45
+ARG WHISPER_CPP_COMMIT=60cd96acff3a
 ARG COMMIT_SHA=unknown
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -16,6 +17,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \ 
         build-essential \ 
         ca-certificates \ 
+        cmake \
         curl \ 
         git \ 
         libasound2-dev \ 
@@ -77,6 +79,22 @@ RUN set -eux; \
     mv "${VOSK_DIR}" /opt/vosk/libvosk; \
     rm -rf /tmp/vosk.zip /tmp/vosk-*
 
+RUN set -eux; \
+    git clone --filter=blob:none https://github.com/kercre123/whisper.cpp.git /opt/whisper.cpp; \
+    git -C /opt/whisper.cpp checkout "${WHISPER_CPP_COMMIT}"; \
+    cmake -S /opt/whisper.cpp -B /opt/whisper.cpp/build_go \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+        -DGGML_NATIVE=OFF \
+        -DGGML_CPU_AARCH64=OFF \
+        -DGGML_CPU_ARM_ARCH=armv8-a \
+        -DGGML_OPENMP=OFF; \
+    cmake --build /opt/whisper.cpp/build_go --target whisper --parallel "$(nproc)"; \
+    mkdir -p /opt/default-whisper-models; \
+    curl -fsSL -o /opt/default-whisper-models/ggml-tiny.bin \
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin"
+
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     set -eux; \
@@ -122,11 +140,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     fi; \
     export PKG_CONFIG_PATH="${LIB_DIR}/pkgconfig"; \
     export PKG_CONFIG_LIBDIR="${PKG_CONFIG_PATH}"; \
-    export CGO_CFLAGS="-I/opt/vosk/libvosk"; \
-    export CGO_LDFLAGS="-L/opt/vosk/libvosk -L${LIB_DIR} -lvosk -lopus -lopusfile -lsodium -lasound -ldl -lpthread"; \
+    export CGO_CFLAGS="-I/opt/vosk/libvosk -I/opt/whisper.cpp/include -I/opt/whisper.cpp/ggml/include"; \
+    export CGO_LDFLAGS="-L/opt/vosk/libvosk -L/opt/whisper.cpp/build_go/src -L/opt/whisper.cpp/build_go/ggml/src -L${LIB_DIR} -lvosk -lopus -lopusfile -lsodium -lasound -ldl -lpthread"; \
     GOOS=${GOOS_VALUE} GOARCH=${GOARCH_VALUE} \
     go build -tags "nolibopusfile" -ldflags "-s -w -X github.com/kercre123/wire-pod/chipper/pkg/vars.CommitSHA=${BUILD_COMMIT}" \
-        -o /build/chipper ./cmd/vosk; \
+        -o /build/chipper ./cmd/docker; \
     echo "${BUILD_COMMIT}" >/build/.wirepod-version
 
 
@@ -136,7 +154,7 @@ ARG COMMIT_SHA=unknown
 
 ENV DEBIAN_FRONTEND=noninteractive \
     WIREPOD_DATA_DIR=/data \
-    LD_LIBRARY_PATH=/opt/vosk/libvosk
+    LD_LIBRARY_PATH=/opt/vosk/libvosk:/opt/whisper.cpp/build_go/src:/opt/whisper.cpp/build_go/ggml/src
 
 RUN apt-get update \ 
     && apt-get install -y --no-install-recommends \ 
@@ -149,6 +167,7 @@ RUN apt-get update \
         iproute2 \ 
         libasound2 \ 
         libatomic1 \ 
+        libgomp1 \
         libopus0 \ 
         libopusfile0 \ 
         libsodium23 \ 
@@ -161,6 +180,8 @@ RUN apt-get update \
 WORKDIR /opt/wire-pod
 
 COPY --from=builder /opt/vosk/libvosk /opt/vosk/libvosk
+COPY --from=builder /opt/whisper.cpp /opt/whisper.cpp
+COPY --from=builder /opt/default-whisper-models /opt/default-whisper-models
 COPY --from=builder /src /opt/wire-pod
 COPY --from=builder /build/chipper /opt/wire-pod/chipper/chipper
 COPY --from=builder /build/.wirepod-version /opt/wire-pod/.wirepod-version
