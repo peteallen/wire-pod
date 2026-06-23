@@ -281,6 +281,10 @@ func StreamingKGSim(req interface{}, esn string, transcribedText string, isKG bo
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
 				// prevents a crash
+				if len(fullRespSlice) == 0 && strings.TrimSpace(fullRespText) != "" {
+					logger.Println("LLM debug: final response had no sentence-ending punctuation")
+					fullRespSlice = append(fullRespSlice, strings.TrimSpace(fullRespText))
+				}
 				if len(fullRespSlice) == 0 {
 					logger.Println("LLM returned no response")
 					successIntent <- false
@@ -296,6 +300,10 @@ func StreamingKGSim(req interface{}, esn string, transcribedText string, isKG bo
 					break
 				}
 				isDone = true
+				select {
+				case successIntent <- true:
+				default:
+				}
 				// if fullRespSlice != fullRespText, add that missing bit to fullRespSlice
 				newStr := fullRespSlice[0]
 				for i, str := range fullRespSlice {
